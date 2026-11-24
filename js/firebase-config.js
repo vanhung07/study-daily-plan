@@ -13,11 +13,12 @@
   var StudyPlan = (global.StudyPlan = global.StudyPlan || {});
 
   StudyPlan.FIREBASE_CONFIG = {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    storageBucket: '',
-    messagingSenderId: '',
-    appId: ''
+    apiKey: 'AIzaSyCeJiYyAO1AN-Qnx0jcJ8k3BZo1igldpUA',
+    authDomain: 'daily-study-plan-cfc40.firebaseapp.com',
+    projectId: 'daily-study-plan-cfc40',
+    storageBucket: 'daily-study-plan-cfc40.firebasestorage.app',
+    messagingSenderId: '864845084081',
+    appId: '1:864845084081:web:b92fbc9dbd20effd70f990',
+    measurementId: 'G-WJQGX4HJH8'
   };
 })(window);
