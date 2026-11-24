@@ -1,0 +1,312 @@
+/* ==========================================================================
+   Design Tokens — StudyPlan (Notion Warm Minimalist)
+   Supports Light (default) and Dark ([data-theme="dark"]) modes
+   ========================================================================== */
+
+:root {
+  /* Typography */
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  /* Surfaces — Light Mode (Warm Off-White) */
+  --bg-app: #ffffff;
+  --bg-canvas: #ffffff;
+  --bg-sidebar: #f7f6f3;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f0ec;
+  --bg-hover: #eae9e4;
+  --bg-active: #e2e1db;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(15, 15, 14, 0.44);
+  --bg-toast: #20201e;
+
+  /* Borders & Hairlines */
+  --border-hairline: #e8e7e3;
+  --border-strong: #d5d3cd;
+  --border-grid: #ecebe7;
+  --border-grid-half: #f3f2ee;
+
+  /* Text Colors */
+  --text-primary: #20201e;
+  --text-secondary: #5e5d59;
+  --text-muted: #8e8c86;
+  --text-inverse: #ffffff;
+  --text-toast: #f7f6f3;
+
+  /* Brand & Semantic Accents */
+  --accent: #2383e2;
+  --accent-hover: #1a6ec2;
+  --accent-soft: rgba(35, 131, 226, 0.1);
+  --accent-border: rgba(35, 131, 226, 0.3);
+
+  --success: #0f7b6c;
+  --success-soft: rgba(15, 123, 108, 0.11);
+  --success-border: rgba(15, 123, 108, 0.25);
+
+  --warning: #d9730d;
+  --warning-soft: rgba(217, 115, 13, 0.11);
+  --warning-border: rgba(217, 115, 13, 0.26);
+
+  --danger: #d93f3c;
+  --danger-hover: #be312e;
+  --danger-soft: rgba(217, 63, 60, 0.1);
+  --danger-border: rgba(217, 63, 60, 0.26);
+
+  /* Streak & Timeline Indicators */
+  --streak-bg: rgba(217, 115, 13, 0.11);
+  --streak-text: #b35a06;
+  --streak-border: rgba(217, 115, 13, 0.24);
+
+  --now-line: #e03e3e;
+  --selection-bg: rgba(35, 131, 226, 0.12);
+  --selection-border: rgba(35, 131, 226, 0.52);
+
+  /* Focus Ring */
+  --focus-ring: 0 0 0 3px rgba(35, 131, 226, 0.22);
+
+  /* Shadows */
+  --shadow-xs: 0 1px 2px rgba(15, 15, 14, 0.04);
+  --shadow-sm: 0 2px 6px rgba(15, 15, 14, 0.06), 0 1px 2px rgba(15, 15, 14, 0.04);
+  --shadow-md: 0 6px 18px rgba(15, 15, 14, 0.08), 0 2px 5px rgba(15, 15, 14, 0.04);
+  --shadow-lg: 0 16px 40px rgba(15, 15, 14, 0.14), 0 4px 12px rgba(15, 15, 14, 0.06);
+
+  /* Layout Dimensions */
+  --sidebar-width: 296px;
+  --header-height: 62px;
+  --gutter-width: 62px;
+  --hour-height: 64px;
+  --half-hour-height: 32px;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 14px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 120ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-base: 180ms cubic-bezier(0.2, 0, 0, 1);
+  --transition-drawer: 240ms cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Z-index Scale */
+  --z-blocks: 10;
+  --z-selection: 16;
+  --z-now-line: 20;
+  --z-empty: 25;
+  --z-header: 30;
+  --z-backdrop: 45;
+  --z-sidebar: 50;
+  --z-modal: 100;
+  --z-toast: 200;
+
+  /* Default fallback subject color (slate) */
+  --item-bar: #787774;
+  --item-bg: rgba(120, 119, 116, 0.1);
+  --item-bg-hover: rgba(120, 119, 116, 0.16);
+  --item-border: rgba(120, 119, 116, 0.22);
+  --item-text: #3d3c39;
+}
+
+/* --------------------------------------------------------------------------
+   Dark Theme Overrides (Calm Charcoal)
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg-app: #191919;
+  --bg-canvas: #191919;
+  --bg-sidebar: #202020;
+  --bg-surface: #202020;
+  --bg-subtle: #262626;
+  --bg-hover: #2d2d2d;
+  --bg-active: #363636;
+  --bg-elevated: #232323;
+  --bg-overlay: rgba(0, 0, 0, 0.66);
+  --bg-toast: #2c2c2c;
+
+  --border-hairline: #2f2f2f;
+  --border-strong: #404040;
+  --border-grid: #282828;
+  --border-grid-half: #222222;
+
+  --text-primary: #ececeb;
+  --text-secondary: #a6a6a3;
+  --text-muted: #767672;
+  --text-inverse: #ffffff;
+  --text-toast: #ececeb;
+
+  --accent: #4c9aff;
+  --accent-hover: #69abff;
+  --accent-soft: rgba(76, 154, 255, 0.15);
+  --accent-border: rgba(76, 154, 255, 0.36);
+
+  --success: #34b89c;
+  --success-soft: rgba(52, 184, 156, 0.16);
+  --success-border: rgba(52, 184, 156, 0.32);
+
+  --warning: #f09a3e;
+  --warning-soft: rgba(240, 154, 62, 0.16);
+  --warning-border: rgba(240, 154, 62, 0.32);
+
+  --danger: #f26d6a;
+  --danger-hover: #f58481;
+  --danger-soft: rgba(242, 109, 106, 0.15);
+  --danger-border: rgba(242, 109, 106, 0.32);
+
+  --streak-bg: rgba(240, 154, 62, 0.15);
+  --streak-text: #f5b36b;
+  --streak-border: rgba(240, 154, 62, 0.28);
+
+  --now-line: #f25f5c;
+  --selection-bg: rgba(76, 154, 255, 0.18);
+  --selection-border: rgba(76, 154, 255, 0.6);
+
+  --focus-ring: 0 0 0 3px rgba(76, 154, 255, 0.28);
+
+  --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.24);
+  --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.32);
+  --shadow-md: 0 8px 22px rgba(0, 0, 0, 0.44);
+  --shadow-lg: 0 18px 46px rgba(0, 0, 0, 0.58);
+
+  --item-bar: #9b9a97;
+  --item-bg: rgba(155, 154, 151, 0.14);
+  --item-bg-hover: rgba(155, 154, 151, 0.22);
+  --item-border: rgba(155, 154, 151, 0.26);
+  --item-text: #e2e1de;
+}
+
+/* ==========================================================================
+   Notion Calendar Subject Color Palette — Light Mode
+   ========================================================================== */
+[data-color="blue"] {
+  --item-bar: #2e7de9;
+  --item-bg: rgba(46, 125, 233, 0.1);
+  --item-bg-hover: rgba(46, 125, 233, 0.16);
+  --item-border: rgba(46, 125, 233, 0.22);
+  --item-text: #19488a;
+}
+
+[data-color="purple"] {
+  --item-bar: #8b5cf6;
+  --item-bg: rgba(139, 92, 246, 0.1);
+  --item-bg-hover: rgba(139, 92, 246, 0.16);
+  --item-border: rgba(139, 92, 246, 0.22);
+  --item-text: #502b99;
+}
+
+[data-color="emerald"] {
+  --item-bar: #10b981;
+  --item-bg: rgba(16, 185, 129, 0.1);
+  --item-bg-hover: rgba(16, 185, 129, 0.16);
+  --item-border: rgba(16, 185, 129, 0.22);
+  --item-text: #0b5d44;
+}
+
+[data-color="amber"] {
+  --item-bar: #d99b18;
+  --item-bg: rgba(217, 155, 24, 0.12);
+  --item-bg-hover: rgba(217, 155, 24, 0.19);
+  --item-border: rgba(217, 155, 24, 0.26);
+  --item-text: #754b05;
+}
+
+[data-color="rose"] {
+  --item-bar: #e15370;
+  --item-bg: rgba(225, 83, 112, 0.1);
+  --item-bg-hover: rgba(225, 83, 112, 0.16);
+  --item-border: rgba(225, 83, 112, 0.22);
+  --item-text: #8a1d36;
+}
+
+[data-color="cyan"] {
+  --item-bar: #0891b2;
+  --item-bg: rgba(8, 145, 178, 0.1);
+  --item-bg-hover: rgba(8, 145, 178, 0.16);
+  --item-border: rgba(8, 145, 178, 0.22);
+  --item-text: #0f5266;
+}
+
+[data-color="orange"] {
+  --item-bar: #ea6d24;
+  --item-bg: rgba(234, 109, 36, 0.11);
+  --item-bg-hover: rgba(234, 109, 36, 0.17);
+  --item-border: rgba(234, 109, 36, 0.24);
+  --item-text: #87380b;
+}
+
+[data-color="slate"] {
+  --item-bar: #787774;
+  --item-bg: rgba(120, 119, 116, 0.1);
+  --item-bg-hover: rgba(120, 119, 116, 0.16);
+  --item-border: rgba(120, 119, 116, 0.22);
+  --item-text: #3d3c39;
+}
+
+/* ==========================================================================
+   Notion Calendar Subject Color Palette — Dark Mode
+   ========================================================================== */
+[data-theme="dark"] [data-color="blue"] {
+  --item-bar: #589cf7;
+  --item-bg: rgba(88, 156, 247, 0.15);
+  --item-bg-hover: rgba(88, 156, 247, 0.23);
+  --item-border: rgba(88, 156, 247, 0.28);
+  --item-text: #cfe3ff;
+}
+
+[data-theme="dark"] [data-color="purple"] {
+  --item-bar: #a78bfa;
+  --item-bg: rgba(167, 139, 250, 0.15);
+  --item-bg-hover: rgba(167, 139, 250, 0.23);
+  --item-border: rgba(167, 139, 250, 0.28);
+  --item-text: #e6dcff;
+}
+
+[data-theme="dark"] [data-color="emerald"] {
+  --item-bar: #34d399;
+  --item-bg: rgba(52, 211, 153, 0.14);
+  --item-bg-hover: rgba(52, 211, 153, 0.22);
+  --item-border: rgba(52, 211, 153, 0.26);
+  --item-text: #caf8e6;
+}
+
+[data-theme="dark"] [data-color="amber"] {
+  --item-bar: #f5bf42;
+  --item-bg: rgba(245, 191, 66, 0.15);
+  --item-bg-hover: rgba(245, 191, 66, 0.23);
+  --item-border: rgba(245, 191, 66, 0.28);
+  --item-text: #feeab8;
+}
+
+[data-theme="dark"] [data-color="rose"] {
+  --item-bar: #fb7185;
+  --item-bg: rgba(251, 113, 133, 0.15);
+  --item-bg-hover: rgba(251, 113, 133, 0.23);
+  --item-border: rgba(251, 113, 133, 0.28);
+  --item-text: #ffd6dd;
+}
+
+[data-theme="dark"] [data-color="cyan"] {
+  --item-bar: #22d3ee;
+  --item-bg: rgba(34, 211, 238, 0.14);
+  --item-bg-hover: rgba(34, 211, 238, 0.22);
+  --item-border: rgba(34, 211, 238, 0.26);
+  --item-text: #c7f6fe;
+}
+
+[data-theme="dark"] [data-color="orange"] {
+  --item-bar: #fb923c;
+  --item-bg: rgba(251, 146, 60, 0.15);
+  --item-bg-hover: rgba(251, 146, 60, 0.23);
+  --item-border: rgba(251, 146, 60, 0.28);
+  --item-text: #ffe1c7;
+}
+
+[data-theme="dark"] [data-color="slate"] {
+  --item-bar: #9b9a97;
+  --item-bg: rgba(155, 154, 151, 0.14);
+  --item-bg-hover: rgba(155, 154, 151, 0.22);
+  --item-border: rgba(155, 154, 151, 0.26);
+  --item-text: #e2e1de;
+}
