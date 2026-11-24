@@ -156,6 +156,39 @@
           <div id="mini-cal-grid" class="mini-cal-grid" role="grid" aria-label="Chọn ngày học"></div>
         </section>
 
+        <!-- Weekly Repeat Section -->
+        <section class="sidebar-section" aria-label="Lặp lại lịch hàng tuần">
+          <div class="weekly-repeat-card">
+            <div class="weekly-repeat-row">
+              <div class="weekly-repeat-info">
+                <span class="weekly-repeat-title">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <polyline points="17 1 21 5 17 9"></polyline>
+                    <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                    <polyline points="7 23 3 19 7 15"></polyline>
+                    <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                  </svg>
+                  <span>Lặp lại tuần</span>
+                </span>
+                <p id="weekly-repeat-desc" class="weekly-repeat-desc">
+                  Bật để tuần sau tự động lặp lại lịch tuần này.
+                </p>
+              </div>
+              <button
+                type="button"
+                id="toggle-weekly-repeat"
+                class="switch-toggle"
+                role="switch"
+                aria-checked="false"
+                aria-label="Tự động lặp lại lịch hàng tuần"
+                title="Bật / tắt tự động lặp lại lịch hàng tuần"
+              >
+                <span class="switch-thumb"></span>
+              </button>
+            </div>
+          </div>
+        </section>
+
         <!-- Daily Focus Section -->
         <section class="sidebar-section" aria-label="Trọng tâm trong ngày">
           <div class="section-heading">
@@ -521,6 +554,9 @@
                   <button type="button" id="btn-copy-yesterday" class="btn btn-subtle btn-sm hidden">
                     Chép lịch từ hôm qua (<span id="copy-yesterday-count">0</span>)
                   </button>
+                  <button type="button" id="btn-copy-last-week" class="btn btn-subtle btn-sm hidden">
+                    Chép lịch tuần trước (<span id="copy-last-week-count">0</span>)
+                  </button>
                 </div>
               </div>
             </div>
@@ -609,6 +645,24 @@
             </div>
           </div>
 
+          <!-- Weekly Recurrence Picker -->
+          <div class="form-field">
+            <div class="field-label-row">
+              <span class="field-label">Lặp lại hàng tuần</span>
+              <button type="button" id="btn-repeat-quick" class="btn-text-action">Lặp thứ này</button>
+            </div>
+            <div id="repeat-days-picker" class="repeat-days-picker" role="group" aria-label="Chọn các thứ lặp lại hàng tuần">
+              <button type="button" class="weekday-chip" data-dow="1" aria-pressed="false">T2</button>
+              <button type="button" class="weekday-chip" data-dow="2" aria-pressed="false">T3</button>
+              <button type="button" class="weekday-chip" data-dow="3" aria-pressed="false">T4</button>
+              <button type="button" class="weekday-chip" data-dow="4" aria-pressed="false">T5</button>
+              <button type="button" class="weekday-chip" data-dow="5" aria-pressed="false">T6</button>
+              <button type="button" class="weekday-chip" data-dow="6" aria-pressed="false">T7</button>
+              <button type="button" class="weekday-chip" data-dow="0" aria-pressed="false">CN</button>
+            </div>
+            <p id="repeat-days-hint" class="field-hint">Không lặp riêng theo thứ.</p>
+          </div>
+
           <!-- Sub-tasks Checklist -->
           <div class="form-field">
             <label for="subtask-input" class="field-label">Đầu việc nhỏ (Sub-tasks)</label>
@@ -651,6 +705,9 @@
           <div class="modal-footer-left">
             <button type="button" id="btn-delete-block" class="btn btn-danger-ghost btn-sm hidden">
               Xóa
+            </button>
+            <button type="button" id="btn-delete-series" class="btn btn-danger-ghost btn-sm hidden">
+              Xóa chuỗi lặp
             </button>
             <button type="button" id="btn-move-tomorrow" class="btn btn-ghost btn-sm hidden">
               Chuyển sang ngày mai

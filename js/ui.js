@@ -52,6 +52,10 @@
     /** @type {string} */
     modalSubjectId: '',
     modalPriority: 'medium',
+    /** @type {number[]} */
+    modalRepeatDays: [],
+    /** @type {string|null} */
+    editingSeriesId: null,
     /** @type {string} */
     pendingImportText: '',
     newSubjectColor: Utils.COLORS[0],
@@ -343,6 +347,20 @@
     if (el.streakCount) el.streakCount.textContent = String(Store.getStudyStreak());
   }
 
+  /** Renders the sidebar weekly auto-repeat switch and caption. */
+  function renderWeeklyRepeat() {
+    if (!el.toggleWeeklyRepeat) return;
+    var active = typeof Store.getWeeklyRepeat === 'function' ? Store.getWeeklyRepeat() : false;
+    el.toggleWeeklyRepeat.setAttribute('aria-checked', active ? 'true' : 'false');
+    var card = el.toggleWeeklyRepeat.closest('.weekly-repeat-card');
+    if (card) card.classList.toggle('is-active', active);
+    if (el.weeklyRepeatDesc) {
+      el.weeklyRepeatDesc.textContent = active
+        ? 'Đang bật: lịch tuần này sẽ tự lặp sang tuần sau.'
+        : 'Bật để tuần sau tự động lặp lại lịch tuần này.';
+    }
+  }
+
   /** Renders the mini calendar for the selected month. */
   function renderCalendar() {
     if (!el.calGrid) return;
@@ -525,6 +543,7 @@
     if (!initialized) return;
     renderHeader();
     renderStreak();
+    renderWeeklyRepeat();
     renderCalendar();
     renderDailyFocus();
     renderStats();
@@ -578,6 +597,40 @@
       var active = options[i].getAttribute('data-priority') === state.modalPriority;
       options[i].classList.toggle('active', active);
       options[i].setAttribute('aria-pressed', active ? 'true' : 'false');
+    }
+  }
+
+  /** Renders weekday repeat chips and smart helper text inside the block modal. */
+  function renderModalRepeatDays() {
+    if (el.repeatDaysPicker) {
+      var chips = el.repeatDaysPicker.querySelectorAll('.weekday-chip');
+      for (var i = 0; i < chips.length; i += 1) {
+        var dow = Number(chips[i].getAttribute('data-dow'));
+        var isSelected = state.modalRepeatDays.indexOf(dow) !== -1;
+        chips[i].classList.toggle('active', isSelected);
+        chips[i].setAttribute('aria-pressed', isSelected ? 'true' : 'false');
+      }
+    }
+    if (el.btnRepeatQuick) {
+      el.btnRepeatQuick.textContent = state.modalRepeatDays.length > 0 ? 'Bỏ lặp' : 'Lặp thứ này';
+    }
+    if (el.repeatDaysHint) {
+      if (state.modalRepeatDays.length > 0) {
+        var displayOrder = [1, 2, 3, 4, 5, 6, 0];
+        var names = displayOrder
+          .filter(function (d) { return state.modalRepeatDays.indexOf(d) !== -1; })
+          .map(function (d) { return Utils.WEEKDAYS_VI[d]; });
+        el.repeatDaysHint.textContent =
+          names.length === 7
+            ? 'Tự động lặp lại vào tất cả các ngày trong tuần.'
+            : 'Tự động lặp vào ' + names.join(', ') + ' hàng tuần.';
+      } else if (typeof Store.getWeeklyRepeat === 'function' && Store.getWeeklyRepeat()) {
+        var modalDow = Utils.parseDateKey(state.modalDateKey).getDay();
+        el.repeatDaysHint.textContent =
+          'Đang tự lặp mỗi ' + Utils.WEEKDAYS_VI[modalDow] + ' (theo cài đặt Lặp lại tuần). Chọn thêm thứ nếu học nhiều buổi/tuần.';
+      } else {
+        el.repeatDaysHint.textContent = 'Không lặp riêng (chỉ tạo cho ngày đang chọn).';
+      }
     }
   }
 
@@ -644,6 +697,12 @@
       ? (block.subtasks || []).map(function (t) { return { id: t.id, text: t.text, done: Boolean(t.done) }; })
       : [];
 
+    var existingRule = block && block.seriesId && typeof Store.getRecurringRuleById === 'function'
+      ? Store.getRecurringRuleById(block.seriesId)
+      : null;
+    state.editingSeriesId = existingRule ? existingRule.id : null;
+    state.modalRepeatDays = existingRule ? existingRule.daysOfWeek.slice() : [];
+
     el.blockModalTitle.textContent = block ? 'Ch\u1EC9nh s\u1EEDa khung gi\u1EDD' : 'Th\u00EAm khung gi\u1EDD h\u1ECDc';
     el.blockTitle.value = block ? block.title : '';
     el.blockStart.value = Utils.minutesToInputTime(startMin);
@@ -653,12 +712,17 @@
     el.subtaskInput.value = '';
 
     // Edit-only actions.
-    if (el.btnDeleteBlock) el.btnDeleteBlock.classList.toggle('hidden', !block);
+    if (el.btnDeleteBlock) {
+      el.btnDeleteBlock.classList.toggle('hidden', !block);
+      el.btnDeleteBlock.textContent = state.editingSeriesId ? 'Xóa buổi này' : 'Xóa';
+    }
+    if (el.btnDeleteSeries) el.btnDeleteSeries.classList.toggle('hidden', !Boolean(block && state.editingSeriesId));
     if (el.btnMoveTomorrow) el.btnMoveTomorrow.classList.toggle('hidden', !block);
     if (el.blockCompletedRow) el.blockCompletedRow.classList.toggle('hidden', !block);
 
     renderModalSubjects();
     renderModalPriority();
+    renderModalRepeatDays();
     renderModalSubtasks();
     updateDurationPill();
     openModal(el.blockModal);
@@ -711,6 +775,50 @@
     };
 
     var dateKey = state.modalDateKey;
+    var currentDow = Utils.parseDateKey(dateKey).getDay();
+    var repeatDays = state.modalRepeatDays.slice();
+
+    if (repeatDays.length > 0 && typeof Store.saveRecurringRule === 'function') {
+      var prevRule = state.editingSeriesId ? Store.getRecurringRuleById(state.editingSeriesId) : null;
+      var startKey = prevRule && prevRule.startDateKey < dateKey ? prevRule.startDateKey : dateKey;
+      var savedRule = Store.saveRecurringRule({
+        id: state.editingSeriesId || undefined,
+        title: title,
+        subjectId: state.modalSubjectId || null,
+        startMin: startMin,
+        endMin: endMin,
+        priority: state.modalPriority,
+        notes: el.blockNotes.value.trim(),
+        subtasks: state.modalSubtasks.map(function (t) { return { id: t.id, text: t.text }; }),
+        daysOfWeek: repeatDays,
+        startDateKey: startKey
+      });
+      if (savedRule) payload.seriesId = savedRule.id;
+
+      if (state.modalMode === 'edit' && state.editingBlockId) {
+        if (repeatDays.indexOf(currentDow) !== -1) {
+          payload.completed = el.blockCompleted ? el.blockCompleted.checked : false;
+          Store.updateBlock(dateKey, state.editingBlockId, payload);
+        } else {
+          Store.deleteBlock(dateKey, state.editingBlockId);
+        }
+        showToast('Đã cập nhật lịch lặp hàng tuần.');
+      } else {
+        if (repeatDays.indexOf(currentDow) !== -1) {
+          payload.completed = el.blockCompleted ? el.blockCompleted.checked : false;
+          Store.addBlock(dateKey, payload);
+        }
+        showToast('Đã tạo khung giờ lặp lại hàng tuần.');
+      }
+      closeBlockModal();
+      return;
+    }
+
+    if (state.editingSeriesId && typeof Store.deleteRecurringRule === 'function') {
+      Store.deleteRecurringRule(state.editingSeriesId);
+      payload.seriesId = null;
+    }
+
     if (state.modalMode === 'edit' && state.editingBlockId) {
       payload.completed = el.blockCompleted ? el.blockCompleted.checked : false;
       Store.updateBlock(dateKey, state.editingBlockId, payload);
@@ -721,6 +829,30 @@
       showToast('\u0110\u00E3 th\u00EAm khung gi\u1EDD m\u1EDBi.');
     }
     closeBlockModal();
+  }
+
+  /** Deletes the entire weekly recurring series (and current day's block) with undo. */
+  function deleteEditingSeries() {
+    var seriesId = state.editingSeriesId;
+    var blockId = state.editingBlockId;
+    var dateKey = state.modalDateKey;
+    if (!seriesId || typeof Store.deleteRecurringRule !== 'function') return;
+    var snap = Timer.getSnapshot();
+    if (snap && snap.blockId === blockId && snap.status !== 'idle') Timer.stop();
+    var removedRule = Store.deleteRecurringRule(seriesId);
+    var removedBlock = blockId ? Store.deleteBlock(dateKey, blockId) : null;
+    closeBlockModal();
+    if (!removedRule) return;
+    showToast('Đã xóa toàn bộ chuỗi lặp hàng tuần.', {
+      actionLabel: 'Hoàn tác',
+      onAction: function () {
+        var restoredRule = Store.saveRecurringRule(removedRule);
+        if (removedBlock) {
+          if (restoredRule) removedBlock.seriesId = restoredRule.id;
+          Store.restoreBlock(dateKey, removedBlock);
+        }
+      }
+    });
   }
 
   /** Deletes the block being edited and offers undo. */
@@ -828,6 +960,25 @@
     }
     showToast('\u0110\u00E3 ch\u00E9p ' + result.copiedCount + ' khung gi\u1EDD t\u1EEB h\u00F4m qua.', {
       actionLabel: 'Ho\u00E0n t\u00E1c',
+      onAction: function () {
+        result.blocks.forEach(function (b) {
+          Store.deleteBlock(dateKey, b.id);
+        });
+      }
+    });
+  }
+
+  /** Copies blocks from 7 days ago into the current day. */
+  function handleCopyLastWeek() {
+    if (typeof Store.copyFromLastWeek !== 'function') return;
+    var dateKey = state.currentDateKey;
+    var result = Store.copyFromLastWeek(dateKey);
+    if (!result || !result.copiedCount) {
+      showToast('Tuần trước chưa có khung giờ nào vào thứ này để chép.');
+      return;
+    }
+    showToast('Đã chép ' + result.copiedCount + ' khung giờ từ tuần trước.', {
+      actionLabel: 'Hoàn tác',
       onAction: function () {
         result.blocks.forEach(function (b) {
           Store.deleteBlock(dateKey, b.id);
@@ -1009,6 +1160,18 @@
     });
     onClick(el.btnClearFilter, function () { setSubjectFilter(null); });
 
+    // Weekly repeat toggle
+    onClick(el.toggleWeeklyRepeat, function () {
+      if (typeof Store.setWeeklyRepeat !== 'function') return;
+      var next = !Store.getWeeklyRepeat();
+      Store.setWeeklyRepeat(next);
+      showToast(
+        next
+          ? 'Đã bật tự động lặp lại lịch hàng tuần cho các tuần tiếp theo.'
+          : 'Đã tắt tự động lặp lại lịch tuần.'
+      );
+    });
+
     // Mini calendar
     onClick(el.calPrev, function () {
       state.calendarMonth -= 1;
@@ -1136,6 +1299,7 @@
       });
     }
     onClick(el.btnDeleteBlock, deleteEditingBlock);
+    onClick(el.btnDeleteSeries, deleteEditingSeries);
     onClick(el.btnMoveTomorrow, moveEditingBlockToTomorrow);
 
     el.blockStart.addEventListener('input', updateDurationPill);
@@ -1172,6 +1336,29 @@
         renderModalPriority();
       });
     }
+
+    if (el.repeatDaysPicker) {
+      el.repeatDaysPicker.addEventListener('click', function (e) {
+        var chip = /** @type {HTMLElement} */ (e.target).closest('.weekday-chip');
+        if (!chip) return;
+        var dow = Number(chip.getAttribute('data-dow'));
+        if (!Number.isInteger(dow) || dow < 0 || dow > 6) return;
+        var idx = state.modalRepeatDays.indexOf(dow);
+        if (idx === -1) state.modalRepeatDays.push(dow);
+        else state.modalRepeatDays.splice(idx, 1);
+        state.modalRepeatDays.sort(function (a, b) { return a - b; });
+        renderModalRepeatDays();
+      });
+    }
+    onClick(el.btnRepeatQuick, function () {
+      if (state.modalRepeatDays.length > 0) {
+        state.modalRepeatDays = [];
+      } else {
+        var currentDow = Utils.parseDateKey(state.modalDateKey).getDay();
+        state.modalRepeatDays = [currentDow];
+      }
+      renderModalRepeatDays();
+    });
 
     // Sub-tasks
     onClick(el.btnAddSubtask, addModalSubtask);
@@ -1396,6 +1583,8 @@
       calPrev: 'cal-prev-month',
       calNext: 'cal-next-month',
       calGrid: 'mini-cal-grid',
+      toggleWeeklyRepeat: 'toggle-weekly-repeat',
+      weeklyRepeatDesc: 'weekly-repeat-desc',
       dailyFocus: 'daily-focus-input',
       progressPercent: 'progress-percent',
       progressFill: 'progress-bar-fill',
@@ -1444,6 +1633,9 @@
       durationPresets: 'duration-presets',
       modalSubjectPicker: 'modal-subject-picker',
       priorityPicker: 'priority-picker',
+      repeatDaysPicker: 'repeat-days-picker',
+      btnRepeatQuick: 'btn-repeat-quick',
+      repeatDaysHint: 'repeat-days-hint',
       subtaskInput: 'subtask-input',
       btnAddSubtask: 'btn-add-subtask',
       modalSubtaskList: 'modal-subtask-list',
@@ -1451,6 +1643,7 @@
       blockCompleted: 'block-completed',
       blockFormError: 'block-form-error',
       btnDeleteBlock: 'btn-delete-block',
+      btnDeleteSeries: 'btn-delete-series',
       btnMoveTomorrow: 'btn-move-tomorrow',
       btnCancelBlock: 'btn-cancel-block',
       importModal: 'import-modal',
@@ -1521,7 +1714,8 @@
       onToggleComplete: handleToggleComplete,
       onBlockMoved: handleBlockMoved,
       onBlockResized: handleBlockResized,
-      onCopyYesterday: handleCopyYesterday
+      onCopyYesterday: handleCopyYesterday,
+      onCopyLastWeek: handleCopyLastWeek
     });
 
     Store.subscribe(renderAll);

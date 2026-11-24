@@ -21,6 +21,7 @@
    * @property {function(Object, number, number): void} onBlockMoved
    * @property {function(Object, number): void} onBlockResized
    * @property {function(): void} onCopyYesterday
+   * @property {function(): void} onCopyLastWeek
    */
 
   /**
@@ -57,7 +58,8 @@
     onToggleComplete: function () {},
     onBlockMoved: function () {},
     onBlockResized: function () {},
-    onCopyYesterday: function () {}
+    onCopyYesterday: function () {},
+    onCopyLastWeek: function () {}
   };
 
   var dom = {
@@ -74,6 +76,8 @@
     btnEmptyAdd: null,
     btnCopyYesterday: null,
     copyCount: null,
+    btnCopyLastWeek: null,
+    copyLastWeekCount: null,
     filterHint: null
   };
 
@@ -271,11 +275,19 @@
     if (isTimerActiveFor(block.id)) classes.push('is-timer-active');
 
     var showMeta = duration >= 45;
+    var isRepeating = Boolean(
+      block.seriesId ||
+      block.isWeeklyAuto ||
+      (typeof Store.getWeeklyRepeat === 'function' && Store.getWeeklyRepeat())
+    );
     var subtasks = block.subtasks || [];
     var meta = '';
     if (showMeta) {
       if (subject) {
         meta += '<span class="block-subject-pill">' + Utils.escapeHtml(subject.name) + '</span>';
+      }
+      if (isRepeating) {
+        meta += '<span class="block-repeat-badge" title="L\u1EB7p l\u1EA1i h\u00E0ng tu\u1EA7n">\u21BB Tu\u1EA7n</span>';
       }
       if (subtasks.length > 0) {
         var doneCount = subtasks.filter(function (s) { return s.done; }).length;
@@ -295,6 +307,9 @@
 
     var checkLabel = block.completed ? 'B\u1ECF \u0111\u00E1nh d\u1EA5u ho\u00E0n th\u00E0nh' : '\u0110\u00E1nh d\u1EA5u ho\u00E0n th\u00E0nh';
     var title = Utils.escapeHtml(block.title);
+    var compactRepeat = !showMeta && isRepeating
+      ? '<span class="block-time-repeat-icon" title="L\u1EB7p l\u1EA1i h\u00E0ng tu\u1EA7n">\u21BB</span>'
+      : '';
 
     return (
       '<div class="' + classes.join(' ') + '" data-block-id="' + Utils.escapeHtml(block.id) +
@@ -307,7 +322,7 @@
             (block.completed ? 'true' : 'false') + '"></button>' +
           '<div class="block-main">' +
             '<div class="block-title-row"><span class="block-title">' + title + '</span></div>' +
-            '<div class="block-time">' + formatRange(block.startMin, block.endMin) + '</div>' +
+            '<div class="block-time">' + formatRange(block.startMin, block.endMin) + compactRepeat + '</div>' +
           '</div>' +
           '<div class="block-actions">' +
             '<button type="button" class="block-focus-btn">' + focusButtonLabel(block.id) + '</button>' +
@@ -360,6 +375,11 @@
       var yesterdayCount = Store.getBlocks(Utils.addDays(currentDateKey, -1), null).length;
       dom.btnCopyYesterday.classList.toggle('hidden', yesterdayCount === 0);
       if (dom.copyCount) dom.copyCount.textContent = String(yesterdayCount);
+    }
+    if (showEmpty && dom.btnCopyLastWeek) {
+      var lastWeekCount = Store.getBlocks(Utils.addDays(currentDateKey, -7), null).length;
+      dom.btnCopyLastWeek.classList.toggle('hidden', lastWeekCount === 0);
+      if (dom.copyLastWeekCount) dom.copyLastWeekCount.textContent = String(lastWeekCount);
     }
 
     var showFilterHint = dayHasBlocks && visibleCount === 0;
@@ -767,6 +787,8 @@
     dom.btnEmptyAdd = document.getElementById('btn-empty-add');
     dom.btnCopyYesterday = document.getElementById('btn-copy-yesterday');
     dom.copyCount = document.getElementById('copy-yesterday-count');
+    dom.btnCopyLastWeek = document.getElementById('btn-copy-last-week');
+    dom.copyLastWeekCount = document.getElementById('copy-last-week-count');
 
     if (!dom.scroll || !dom.canvas || !dom.layer || !dom.grid || !dom.gutter || !dom.selection) {
       console.error('[Timeline] Required DOM elements are missing.');
@@ -791,6 +813,11 @@
     if (dom.btnCopyYesterday) {
       dom.btnCopyYesterday.addEventListener('click', function () {
         callbacks.onCopyYesterday();
+      });
+    }
+    if (dom.btnCopyLastWeek) {
+      dom.btnCopyLastWeek.addEventListener('click', function () {
+        callbacks.onCopyLastWeek();
       });
     }
 

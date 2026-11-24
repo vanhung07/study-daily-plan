@@ -41,15 +41,34 @@
    * @property {SubTask[]} subtasks
    * @property {number} focusedMin Minutes actually focused via the timer
    * @property {boolean} completed
+   * @property {string|null} [seriesId] Optional recurring rule ID
+   * @property {string|null} [originId] Optional lineage ID for weekly auto-repeat
+   * @property {boolean} [isWeeklyAuto] True when projected via weekly auto-repeat
+   *
+   * @typedef {Object} RecurringRule
+   * @property {string} id
+   * @property {string} title
+   * @property {string|null} subjectId
+   * @property {number} startMin
+   * @property {number} endMin
+   * @property {Priority} priority
+   * @property {string} notes
+   * @property {Array<{id: string, text: string}>} subtasks
+   * @property {number[]} daysOfWeek Sorted unique weekday indices 0..6 (0=Sun..6=Sat)
+   * @property {string} startDateKey 'YYYY-MM-DD'
    *
    * @typedef {Object} DayPlan
    * @property {string} focus
    * @property {StudyBlock[]} blocks
+   * @property {boolean} [touched] True once user explicitly modified this date
+   * @property {string[]} [dismissedSeriesIds] Recurring rule IDs skipped on this date
    *
    * @typedef {Object} AppState
    * @property {1} version
    * @property {Theme} theme
+   * @property {boolean} weeklyRepeat Automatically repeat weekly schedule into future weeks
    * @property {Subject[]} subjects
+   * @property {RecurringRule[]} recurringRules
    * @property {Record<string, DayPlan>} days
    *
    * @typedef {Object} BlockInput
@@ -105,7 +124,14 @@
    * @returns {AppState}
    */
   function createEmptyState(theme) {
-    return { version: STATE_VERSION, theme: theme === 'dark' ? 'dark' : 'light', subjects: [], days: {} };
+    return {
+      version: STATE_VERSION,
+      theme: theme === 'dark' ? 'dark' : 'light',
+      weeklyRepeat: false,
+      subjects: [],
+      recurringRules: [],
+      days: {}
+    };
   }
 
   /**
@@ -196,7 +222,7 @@
       ? /** @type {SubTask[]} */ (src.subtasks.map((s) => sanitizeSubtask(s, true)).filter(Boolean))
       : [];
     const title = cleanText(src.title, 120).trim();
-    return {
+    const block = {
       id: keepId && typeof src.id === 'string' && src.id ? src.id : Utils.uid('blk'),
       title: title || 'Khung giờ học',
       subjectId: typeof src.subjectId === 'string' && src.subjectId ? src.subjectId : null,
@@ -207,6 +233,57 @@
       subtasks: subtasks,
       focusedMin: nonNegativeInt(src.focusedMin),
       completed: src.completed === true
+    };
+    if (typeof src.seriesId === 'string' && src.seriesId) block.seriesId = src.seriesId;
+    if (typeof src.originId === 'string' && src.originId) block.originId = src.originId;
+    if (src.isWeeklyAuto === true) block.isWeeklyAuto = true;
+    return block;
+  }
+
+  /**
+   * Normalize an array of weekday indices (0..6).
+   * @param {unknown} raw
+   * @returns {number[]}
+   */
+  function sanitizeDaysOfWeek(raw) {
+    if (!Array.isArray(raw)) return [];
+    const set = new Set();
+    raw.forEach((d) => {
+      const n = Number(d);
+      if (Number.isInteger(n) && n >= 0 && n <= 6) set.add(n);
+    });
+    return Array.from(set).sort((a, b) => a - b);
+  }
+
+  /**
+   * @param {unknown} raw
+   * @param {boolean} keepId
+   * @returns {RecurringRule|null}
+   */
+  function sanitizeRecurringRule(raw, keepId) {
+    if (!isPlainObject(raw)) return null;
+    const daysOfWeek = sanitizeDaysOfWeek(raw.daysOfWeek);
+    if (daysOfWeek.length === 0) return null;
+    const range = sanitizeRange(raw.startMin, raw.endMin);
+    const title = cleanText(raw.title, 120).trim();
+    const subtasks = Array.isArray(raw.subtasks)
+      ? raw.subtasks
+          .map((s) => sanitizeSubtask(s, true))
+          .filter(Boolean)
+          .map((s) => ({ id: /** @type {SubTask} */ (s).id, text: /** @type {SubTask} */ (s).text }))
+      : [];
+    const startDateKey = Utils.isValidDateKey(raw.startDateKey) ? /** @type {string} */ (raw.startDateKey) : Utils.getTodayKey();
+    return {
+      id: keepId && typeof raw.id === 'string' && raw.id ? raw.id : Utils.uid('rec'),
+      title: title || 'Khung giờ học',
+      subjectId: typeof raw.subjectId === 'string' && raw.subjectId ? raw.subjectId : null,
+      startMin: range.startMin,
+      endMin: range.endMin,
+      priority: /** @type {Priority} */ (PRIORITIES.indexOf(/** @type {string} */ (raw.priority)) !== -1 ? raw.priority : 'medium'),
+      notes: cleanText(raw.notes, 4000),
+      subtasks: subtasks,
+      daysOfWeek: daysOfWeek,
+      startDateKey: startDateKey
     };
   }
 
@@ -227,7 +304,20 @@
         blocks.push(block);
       });
     }
-    return { focus: cleanText(src.focus, 500), blocks: blocks };
+    const focus = cleanText(src.focus, 500);
+    /** @type {string[]} */
+    const dismissedSeriesIds = Array.isArray(src.dismissedSeriesIds)
+      ? Array.from(new Set(src.dismissedSeriesIds.filter((x) => typeof x === 'string' && x.length > 0)))
+      : [];
+    /** @type {DayPlan} */
+    const day = { focus: focus, blocks: blocks };
+    if (src.touched === true || blocks.length > 0 || focus.length > 0 || dismissedSeriesIds.length > 0) {
+      day.touched = true;
+    }
+    if (dismissedSeriesIds.length > 0) {
+      day.dismissedSeriesIds = dismissedSeriesIds;
+    }
+    return day;
   }
 
   /**
@@ -239,6 +329,7 @@
   function sanitizeState(raw, fallbackTheme) {
     const src = isPlainObject(raw) ? raw : {};
     const result = createEmptyState(src.theme === 'dark' || src.theme === 'light' ? src.theme : fallbackTheme);
+    result.weeklyRepeat = src.weeklyRepeat === true;
     const ids = new Set();
     if (Array.isArray(src.subjects)) {
       src.subjects.forEach((s) => {
@@ -249,6 +340,17 @@
         }
       });
     }
+    const ruleIds = new Set();
+    if (Array.isArray(src.recurringRules)) {
+      src.recurringRules.forEach((r) => {
+        const rule = sanitizeRecurringRule(r, true);
+        if (rule && !ruleIds.has(rule.id)) {
+          if (rule.subjectId && !ids.has(rule.subjectId)) rule.subjectId = null;
+          ruleIds.add(rule.id);
+          result.recurringRules.push(rule);
+        }
+      });
+    }
     if (isPlainObject(src.days)) {
       Object.keys(src.days).forEach((key) => {
         if (!Utils.isValidDateKey(key)) return;
@@ -256,7 +358,7 @@
         day.blocks.forEach((b) => {
           if (b.subjectId && !ids.has(b.subjectId)) b.subjectId = null;
         });
-        if (day.blocks.length > 0 || day.focus) result.days[key] = day;
+        if (day.blocks.length > 0 || day.focus || day.touched) result.days[key] = day;
       });
     }
     return result;
@@ -458,12 +560,177 @@
   }
 
   /**
-   * Remove empty day entries to keep storage lean.
+   * Remove empty day entries to keep storage lean, while keeping intentional tombstones
+   * when weekly repeat or recurring rules are active.
    * @param {string} dateKey
    */
   function pruneDay(dateKey) {
     const day = state.days[dateKey];
-    if (day && day.blocks.length === 0 && !day.focus) delete state.days[dateKey];
+    if (!day) return;
+    if (day.blocks.length > 0 || day.focus) return;
+    const hasDismissed = Array.isArray(day.dismissedSeriesIds) && day.dismissedSeriesIds.length > 0;
+    const keepEmptyTombstone =
+      day.touched === true && (hasDismissed || state.weeklyRepeat || state.recurringRules.length > 0);
+    if (!keepEmptyTombstone) delete state.days[dateKey];
+  }
+
+  /**
+   * Look backwards week-by-week (up to 52 weeks) for the most recent stored same-weekday blocks.
+   * Stops early if a more recent week was explicitly cleared by the user.
+   * @param {string} dateKey
+   * @returns {StudyBlock[]}
+   */
+  function findWeeklySourceBlocks(dateKey) {
+    for (let k = 1; k <= 52; k++) {
+      const prevKey = Utils.addDays(dateKey, -7 * k);
+      const prevDay = state.days[prevKey];
+      if (prevDay && prevDay.blocks.length > 0) return prevDay.blocks;
+    }
+    return [];
+  }
+
+  /**
+   * Build deterministic projected + stored blocks for any date without mutating state.
+   * @param {string} dateKey
+   * @returns {StudyBlock[]}
+   */
+  function resolveEffectiveBlocks(dateKey) {
+    if (!Utils.isValidDateKey(dateKey)) return [];
+    const compact = dateKey.replace(/-/g, '');
+    const dow = Utils.parseDateKey(dateKey).getDay();
+    const storedDay = state.days[dateKey] || null;
+    const dismissed = new Set(
+      storedDay && Array.isArray(storedDay.dismissedSeriesIds) ? storedDay.dismissedSeriesIds : []
+    );
+
+    if (storedDay && storedDay.touched) {
+      const list = Utils.deepClone(storedDay.blocks);
+      const presentSeries = new Set(list.map((b) => b.seriesId).filter(Boolean));
+      state.recurringRules.forEach((rule) => {
+        if (dateKey < rule.startDateKey) return;
+        if (rule.daysOfWeek.indexOf(dow) === -1) return;
+        if (dismissed.has(rule.id) || presentSeries.has(rule.id)) return;
+        list.push({
+          id: 'rep_' + compact + '_' + rule.id,
+          title: rule.title,
+          subjectId: validSubjectIdOrNull(rule.subjectId),
+          startMin: rule.startMin,
+          endMin: rule.endMin,
+          priority: rule.priority,
+          notes: rule.notes,
+          subtasks: rule.subtasks.map((s, idx) => ({
+            id: 'repst_' + compact + '_' + rule.id + '_' + idx,
+            text: s.text,
+            done: false
+          })),
+          focusedMin: 0,
+          completed: false,
+          seriesId: rule.id
+        });
+      });
+      return sortBlocks(list);
+    }
+
+    /** @type {StudyBlock[]} */
+    const projected = [];
+    const seenSeries = new Set();
+
+    state.recurringRules.forEach((rule) => {
+      if (dateKey < rule.startDateKey) return;
+      if (rule.daysOfWeek.indexOf(dow) === -1) return;
+      if (dismissed.has(rule.id)) return;
+      seenSeries.add(rule.id);
+      projected.push({
+        id: 'rep_' + compact + '_' + rule.id,
+        title: rule.title,
+        subjectId: validSubjectIdOrNull(rule.subjectId),
+        startMin: rule.startMin,
+        endMin: rule.endMin,
+        priority: rule.priority,
+        notes: rule.notes,
+        subtasks: rule.subtasks.map((s, idx) => ({
+          id: 'repst_' + compact + '_' + rule.id + '_' + idx,
+          text: s.text,
+          done: false
+        })),
+        focusedMin: 0,
+        completed: false,
+        seriesId: rule.id
+      });
+    });
+
+    if (state.weeklyRepeat) {
+      const sourceBlocks = findWeeklySourceBlocks(dateKey);
+      sourceBlocks.forEach((srcBlk) => {
+        if (srcBlk.seriesId && (seenSeries.has(srcBlk.seriesId) || dismissed.has(srcBlk.seriesId))) return;
+        const origin = srcBlk.originId || srcBlk.id;
+        projected.push({
+          id: 'wk_' + compact + '_' + origin,
+          title: srcBlk.title,
+          subjectId: validSubjectIdOrNull(srcBlk.subjectId),
+          startMin: srcBlk.startMin,
+          endMin: srcBlk.endMin,
+          priority: srcBlk.priority,
+          notes: srcBlk.notes,
+          subtasks: srcBlk.subtasks.map((s, idx) => ({
+            id: 'wkst_' + compact + '_' + origin + '_' + idx,
+            text: s.text,
+            done: false
+          })),
+          focusedMin: 0,
+          completed: false,
+          seriesId: srcBlk.seriesId || null,
+          originId: origin,
+          isWeeklyAuto: true
+        });
+      });
+    }
+
+    return sortBlocks(projected);
+  }
+
+  /**
+   * Materialize effective blocks into state.days[dateKey] prior to any user mutation on that day.
+   * @param {string} dateKey
+   * @returns {DayPlan|null}
+   */
+  function materializeDayForWrite(dateKey) {
+    if (!Utils.isValidDateKey(dateKey)) return null;
+    const effective = resolveEffectiveBlocks(dateKey);
+    const day = /** @type {DayPlan} */ (getDayRef(dateKey, true));
+    if (!day.touched) {
+      day.blocks = effective;
+      day.touched = true;
+    } else {
+      effective.forEach((eb) => {
+        if (!day.blocks.some((b) => b.id === eb.id)) day.blocks.push(eb);
+      });
+    }
+    return day;
+  }
+
+  /**
+   * Record that a recurring series was intentionally dismissed on a specific date.
+   * @param {DayPlan} day
+   * @param {string|null|undefined} seriesId
+   */
+  function markSeriesDismissed(day, seriesId) {
+    if (!seriesId) return;
+    if (!Array.isArray(day.dismissedSeriesIds)) day.dismissedSeriesIds = [];
+    if (day.dismissedSeriesIds.indexOf(seriesId) === -1) {
+      day.dismissedSeriesIds.push(seriesId);
+    }
+  }
+
+  /**
+   * Clear a dismissed series marker (used on Undo restore).
+   * @param {DayPlan} day
+   * @param {string|null|undefined} seriesId
+   */
+  function unmarkSeriesDismissed(day, seriesId) {
+    if (!seriesId || !Array.isArray(day.dismissedSeriesIds)) return;
+    day.dismissedSeriesIds = day.dismissedSeriesIds.filter((id) => id !== seriesId);
+    if (day.dismissedSeriesIds.length === 0) delete day.dismissedSeriesIds;
   }
 
   /**
@@ -561,6 +828,78 @@
     return next;
   }
 
+  /** @returns {boolean} */
+  function getWeeklyRepeat() {
+    return state.weeklyRepeat === true;
+  }
+
+  /**
+   * Enable or disable automatic weekly schedule repeat.
+   * @param {boolean} enabled
+   * @returns {boolean}
+   */
+  function setWeeklyRepeat(enabled) {
+    const next = enabled === true;
+    if (state.weeklyRepeat !== next) {
+      state.weeklyRepeat = next;
+      commit('weekly-repeat');
+    }
+    return next;
+  }
+
+  /** @returns {RecurringRule[]} */
+  function getRecurringRules() {
+    return Utils.deepClone(state.recurringRules);
+  }
+
+  /**
+   * @param {string|null|undefined} id
+   * @returns {RecurringRule|null}
+   */
+  function getRecurringRuleById(id) {
+    if (!id) return null;
+    const rule = state.recurringRules.find((r) => r.id === id);
+    return rule ? Utils.deepClone(rule) : null;
+  }
+
+  /**
+   * Create or update a recurring weekly rule.
+   * @param {Partial<RecurringRule> & { daysOfWeek: number[] }} ruleInput
+   * @returns {RecurringRule|null}
+   */
+  function saveRecurringRule(ruleInput) {
+    if (!isPlainObject(ruleInput)) return null;
+    const hasExistingId = typeof ruleInput.id === 'string' && ruleInput.id.length > 0;
+    const clean = sanitizeRecurringRule(ruleInput, hasExistingId);
+    if (!clean) return null;
+    clean.subjectId = validSubjectIdOrNull(clean.subjectId);
+    const idx = state.recurringRules.findIndex((r) => r.id === clean.id);
+    if (idx === -1) state.recurringRules.push(clean);
+    else state.recurringRules[idx] = clean;
+    commit('recurring-save');
+    return Utils.deepClone(clean);
+  }
+
+  /**
+   * Delete a recurring rule. Existing completed/materialized blocks remain as standalone blocks.
+   * @param {string} ruleId
+   * @returns {RecurringRule|null}
+   */
+  function deleteRecurringRule(ruleId) {
+    const idx = state.recurringRules.findIndex((r) => r.id === ruleId);
+    if (idx === -1) return null;
+    const removed = state.recurringRules.splice(idx, 1)[0];
+    Object.keys(state.days).forEach((key) => {
+      const day = state.days[key];
+      day.blocks.forEach((b) => {
+        if (b.seriesId === ruleId) delete b.seriesId;
+      });
+      unmarkSeriesDismissed(day, ruleId);
+    });
+    commit('recurring-delete');
+    return Utils.deepClone(removed);
+  }
+
   /** @returns {Subject[]} */
   function getSubjects() {
     return Utils.deepClone(state.subjects);
@@ -622,20 +961,24 @@
         }
       });
     });
+    state.recurringRules.forEach((r) => {
+      if (r.subjectId === id) r.subjectId = null;
+    });
     commit('subject-delete');
     return { subject: Utils.deepClone(removed), affectedBlocks: affected };
   }
 
   /**
    * @param {string} dateKey
-   * @returns {DayPlan} cloned plan, or an empty one
+   * @returns {DayPlan} cloned plan (with projected recurring/weekly blocks included)
    */
   function getDay(dateKey) {
     const day = getDayRef(dateKey, false);
-    if (!day) return { focus: '', blocks: [] };
-    const clone = Utils.deepClone(day);
-    sortBlocks(clone.blocks);
-    return clone;
+    const blocks = resolveEffectiveBlocks(dateKey);
+    return {
+      focus: day ? day.focus : '',
+      blocks: blocks
+    };
   }
 
   /**
@@ -643,8 +986,7 @@
    * @returns {boolean}
    */
   function hasBlocksOnDate(dateKey) {
-    const day = state.days[dateKey];
-    return !!day && day.blocks.length > 0;
+    return resolveEffectiveBlocks(dateKey).length > 0;
   }
 
   /**
@@ -654,7 +996,9 @@
    */
   function setDailyFocus(dateKey, focusText) {
     const text = cleanText(focusText, 500);
-    const day = getDayRef(dateKey, !!text);
+    const existing = getDayRef(dateKey, false);
+    if (!existing && !text) return '';
+    const day = materializeDayForWrite(dateKey);
     if (!day) return '';
     if (day.focus === text) return text;
     day.focus = text;
@@ -669,11 +1013,9 @@
    * @returns {StudyBlock[]} sorted clones
    */
   function getBlocks(dateKey, subjectFilterId) {
-    const day = getDayRef(dateKey, false);
-    if (!day) return [];
-    let blocks = day.blocks;
+    let blocks = resolveEffectiveBlocks(dateKey);
     if (subjectFilterId) blocks = blocks.filter((b) => b.subjectId === subjectFilterId);
-    return sortBlocks(Utils.deepClone(blocks));
+    return sortBlocks(blocks);
   }
 
   /**
@@ -682,12 +1024,13 @@
    * @returns {StudyBlock|null}
    */
   function getBlockById(dateKey, blockId) {
-    const b = findBlockRef(dateKey, blockId);
+    const blocks = resolveEffectiveBlocks(dateKey);
+    const b = blocks.find((x) => x.id === blockId);
     return b ? Utils.deepClone(b) : null;
   }
 
   /**
-   * Find which date currently holds a block ID (used by the timer to follow moved blocks).
+   * Find which date currently holds a block ID (supports both stored and projected IDs).
    * @param {string} blockId
    * @returns {string|null}
    */
@@ -695,6 +1038,13 @@
     const keys = Object.keys(state.days);
     for (let i = 0; i < keys.length; i++) {
       if (state.days[keys[i]].blocks.some((b) => b.id === blockId)) return keys[i];
+    }
+    if (typeof blockId === 'string') {
+      const m = /^(?:wk|rep)_(\d{4})(\d{2})(\d{2})_/.exec(blockId);
+      if (m) {
+        const candidate = m[1] + '-' + m[2] + '-' + m[3];
+        if (resolveEffectiveBlocks(candidate).some((b) => b.id === blockId)) return candidate;
+      }
     }
     return null;
   }
@@ -705,10 +1055,11 @@
    * @returns {StudyBlock|null}
    */
   function addBlock(dateKey, blockInput) {
-    const day = getDayRef(dateKey, true);
+    const day = materializeDayForWrite(dateKey);
     if (!day) return null;
     const block = sanitizeBlock(blockInput, { keepId: false });
     block.subjectId = validSubjectIdOrNull(block.subjectId);
+    if (block.seriesId) unmarkSeriesDismissed(day, block.seriesId);
     day.blocks.push(block);
     commit('block-add');
     return Utils.deepClone(block);
@@ -721,13 +1072,15 @@
    * @returns {StudyBlock|null}
    */
   function updateBlock(dateKey, blockId, patch) {
-    const day = getDayRef(dateKey, false);
-    if (!day || !isPlainObject(patch)) return null;
+    if (!isPlainObject(patch)) return null;
+    const day = materializeDayForWrite(dateKey);
+    if (!day) return null;
     const idx = day.blocks.findIndex((b) => b.id === blockId);
     if (idx === -1) return null;
     // focusedMin is owned by the timer (addFocusedMinutes); never let a stale edit form overwrite it.
     const merged = Object.assign({}, day.blocks[idx], patch, { id: blockId, focusedMin: day.blocks[idx].focusedMin });
     const next = sanitizeBlock(merged, { keepId: true });
+    if (patch.seriesId === null) delete next.seriesId;
     next.subjectId = validSubjectIdOrNull(next.subjectId);
     day.blocks[idx] = next;
     commit('block-update');
@@ -740,11 +1093,12 @@
    * @returns {StudyBlock|null} removed block
    */
   function deleteBlock(dateKey, blockId) {
-    const day = getDayRef(dateKey, false);
+    const day = materializeDayForWrite(dateKey);
     if (!day) return null;
     const idx = day.blocks.findIndex((b) => b.id === blockId);
     if (idx === -1) return null;
     const removed = day.blocks.splice(idx, 1)[0];
+    if (removed.seriesId) markSeriesDismissed(day, removed.seriesId);
     pruneDay(dateKey);
     commit('block-delete');
     return Utils.deepClone(removed);
@@ -757,10 +1111,12 @@
    * @returns {StudyBlock|null}
    */
   function restoreBlock(dateKey, blockObj) {
-    const day = getDayRef(dateKey, true);
-    if (!day || !isPlainObject(blockObj)) return null;
+    if (!isPlainObject(blockObj)) return null;
+    const day = materializeDayForWrite(dateKey);
+    if (!day) return null;
     const block = sanitizeBlock(blockObj, { keepId: true });
     block.subjectId = validSubjectIdOrNull(block.subjectId);
+    if (block.seriesId) unmarkSeriesDismissed(day, block.seriesId);
     const idx = day.blocks.findIndex((b) => b.id === block.id);
     if (idx === -1) day.blocks.push(block);
     else day.blocks[idx] = block;
@@ -774,6 +1130,8 @@
    * @returns {StudyBlock|null}
    */
   function toggleBlockCompleted(dateKey, blockId) {
+    const day = materializeDayForWrite(dateKey);
+    if (!day) return null;
     const b = findBlockRef(dateKey, blockId);
     if (!b) return null;
     b.completed = !b.completed;
@@ -788,6 +1146,8 @@
    * @returns {StudyBlock|null}
    */
   function toggleSubtask(dateKey, blockId, subtaskId) {
+    const day = materializeDayForWrite(dateKey);
+    if (!day) return null;
     const b = findBlockRef(dateKey, blockId);
     if (!b) return null;
     const st = b.subtasks.find((s) => s.id === subtaskId);
@@ -806,11 +1166,45 @@
    */
   function addFocusedMinutes(dateKey, blockId, deltaMin) {
     const delta = nonNegativeInt(deltaMin);
+    if (delta <= 0) return getBlockById(dateKey, blockId);
+    const day = materializeDayForWrite(dateKey);
+    if (!day) return null;
     const b = findBlockRef(dateKey, blockId);
-    if (!b || delta <= 0) return b ? Utils.deepClone(b) : null;
+    if (!b) return null;
     b.focusedMin = nonNegativeInt(b.focusedMin + delta);
     commit('focus-minutes');
     return Utils.deepClone(b);
+  }
+
+  /**
+   * Internal helper to copy blocks from a relative day offset (-1 yesterday, -7 last week).
+   * @param {string} targetDateKey
+   * @param {number} dayOffset
+   * @param {string} reason
+   * @returns {{ copiedCount: number, blocks: StudyBlock[] }}
+   */
+  function copyFromRelativeDay(targetDateKey, dayOffset, reason) {
+    if (!Utils.isValidDateKey(targetDateKey)) return { copiedCount: 0, blocks: [] };
+    const sourceKey = Utils.addDays(targetDateKey, dayOffset);
+    const sourceBlocks = resolveEffectiveBlocks(sourceKey);
+    if (sourceBlocks.length === 0) {
+      return { copiedCount: 0, blocks: [] };
+    }
+    const day = /** @type {DayPlan} */ (materializeDayForWrite(targetDateKey));
+    /** @type {StudyBlock[]} */
+    const copies = sortBlocks(Utils.deepClone(sourceBlocks)).map((b) => {
+      const copy = sanitizeBlock(b, { keepId: false });
+      delete copy.seriesId;
+      delete copy.isWeeklyAuto;
+      copy.completed = false;
+      copy.focusedMin = 0;
+      copy.subtasks = copy.subtasks.map((s) => ({ id: Utils.uid('st'), text: s.text, done: false }));
+      copy.subjectId = validSubjectIdOrNull(copy.subjectId);
+      return copy;
+    });
+    copies.forEach((c) => day.blocks.push(c));
+    commit(reason);
+    return { copiedCount: copies.length, blocks: Utils.deepClone(copies) };
   }
 
   /**
@@ -819,24 +1213,16 @@
    * @returns {{ copiedCount: number, blocks: StudyBlock[] }}
    */
   function copyFromYesterday(targetDateKey) {
-    const sourceKey = Utils.addDays(targetDateKey, -1);
-    const source = getDayRef(sourceKey, false);
-    if (!source || source.blocks.length === 0 || !Utils.isValidDateKey(targetDateKey)) {
-      return { copiedCount: 0, blocks: [] };
-    }
-    const day = /** @type {DayPlan} */ (getDayRef(targetDateKey, true));
-    /** @type {StudyBlock[]} */
-    const copies = sortBlocks(Utils.deepClone(source.blocks)).map((b) => {
-      const copy = sanitizeBlock(b, { keepId: false });
-      copy.completed = false;
-      copy.focusedMin = 0;
-      copy.subtasks = copy.subtasks.map((s) => ({ id: Utils.uid('st'), text: s.text, done: false }));
-      copy.subjectId = validSubjectIdOrNull(copy.subjectId);
-      return copy;
-    });
-    copies.forEach((c) => day.blocks.push(c));
-    commit('copy-yesterday');
-    return { copiedCount: copies.length, blocks: Utils.deepClone(copies) };
+    return copyFromRelativeDay(targetDateKey, -1, 'copy-yesterday');
+  }
+
+  /**
+   * Copy blocks from 7 days ago into the target day as fresh, unfinished blocks.
+   * @param {string} targetDateKey
+   * @returns {{ copiedCount: number, blocks: StudyBlock[] }}
+   */
+  function copyFromLastWeek(targetDateKey) {
+    return copyFromRelativeDay(targetDateKey, -7, 'copy-last-week');
   }
 
   /**
@@ -846,14 +1232,19 @@
    * @returns {{ movedBlock: StudyBlock, fromDateKey: string, targetDateKey: string }|null}
    */
   function moveBlockToTomorrow(dateKey, blockId) {
-    const day = getDayRef(dateKey, false);
+    const day = materializeDayForWrite(dateKey);
     if (!day) return null;
     const idx = day.blocks.findIndex((b) => b.id === blockId);
     if (idx === -1) return null;
     const targetDateKey = Utils.addDays(dateKey, 1);
     const block = day.blocks.splice(idx, 1)[0];
+    if (block.seriesId) {
+      markSeriesDismissed(day, block.seriesId);
+      delete block.seriesId;
+    }
+    delete block.isWeeklyAuto;
     block.completed = false;
-    const target = /** @type {DayPlan} */ (getDayRef(targetDateKey, true));
+    const target = /** @type {DayPlan} */ (materializeDayForWrite(targetDateKey));
     if (target.blocks.some((b) => b.id === block.id)) block.id = Utils.uid('blk');
     target.blocks.push(block);
     pruneDay(dateKey);
@@ -866,11 +1257,10 @@
    * @returns {DayStats}
    */
   function getDayStats(dateKey) {
-    const day = getDayRef(dateKey, false);
+    const blocks = resolveEffectiveBlocks(dateKey);
     /** @type {DayStats} */
     const stats = { plannedMin: 0, completedMin: 0, focusedMin: 0, totalCount: 0, completedCount: 0, percent: 0 };
-    if (!day) return stats;
-    day.blocks.forEach((b) => {
+    blocks.forEach((b) => {
       const dur = b.endMin - b.startMin;
       stats.plannedMin += dur;
       stats.focusedMin += b.focusedMin;
@@ -921,11 +1311,13 @@
     if (!isPlainObject(parsed)) return { ok: false, error: 'Cấu trúc dữ liệu không hợp lệ.' };
     const hasDays = isPlainObject(parsed.days);
     const hasSubjects = Array.isArray(parsed.subjects);
-    if (!hasDays && !hasSubjects) {
+    const hasRecurring = Array.isArray(parsed.recurringRules);
+    if (!hasDays && !hasSubjects && !hasRecurring) {
       return { ok: false, error: 'Không tìm thấy dữ liệu kế hoạch học tập (thiếu "days" hoặc "subjects").' };
     }
     if (parsed.days !== undefined && !hasDays) return { ok: false, error: 'Trường "days" không đúng định dạng.' };
     if (parsed.subjects !== undefined && !hasSubjects) return { ok: false, error: 'Trường "subjects" không đúng định dạng.' };
+    if (parsed.recurringRules !== undefined && !hasRecurring) return { ok: false, error: 'Trường "recurringRules" không đúng định dạng.' };
     if (typeof parsed.version === 'number' && parsed.version > STATE_VERSION) {
       return { ok: false, error: 'Tệp được tạo từ phiên bản mới hơn, không thể nhập.' };
     }
@@ -943,10 +1335,64 @@
     const clean = sanitizeState(res.data, state.theme);
     const keys = Object.keys(clean.days);
     const blockCount = keys.reduce((sum, k) => sum + clean.days[k].blocks.length, 0);
-    if (keys.length === 0 && clean.subjects.length === 0) {
+    if (keys.length === 0 && clean.subjects.length === 0 && clean.recurringRules.length === 0) {
       return { ok: false, error: 'Tệp không chứa môn học hay khung giờ học nào.' };
     }
     return { ok: true, dayCount: keys.length, blockCount: blockCount, subjectCount: clean.subjects.length };
+  }
+
+  /**
+   * Merge incoming sanitized state into current state (shared by JSON merge and Cloud merge).
+   * @param {AppState} incoming
+   */
+  function mergeIncomingStateIntoCurrent(incoming) {
+    if (incoming.weeklyRepeat) state.weeklyRepeat = true;
+
+    /** @type {Record<string, string>} */
+    const subjectIdMap = {};
+    incoming.subjects.forEach((s) => {
+      const byId = state.subjects.find((x) => x.id === s.id);
+      if (byId) {
+        subjectIdMap[s.id] = byId.id;
+        return;
+      }
+      const byName = state.subjects.find((x) => x.name.toLowerCase() === s.name.toLowerCase());
+      if (byName) {
+        subjectIdMap[s.id] = byName.id;
+        return;
+      }
+      state.subjects.push(s);
+      subjectIdMap[s.id] = s.id;
+    });
+
+    incoming.recurringRules.forEach((r) => {
+      r.subjectId = r.subjectId ? subjectIdMap[r.subjectId] || null : null;
+      const idx = state.recurringRules.findIndex((x) => x.id === r.id);
+      if (idx === -1) state.recurringRules.push(r);
+      else state.recurringRules[idx] = r;
+    });
+
+    Object.keys(incoming.days).forEach((key) => {
+      const inDay = incoming.days[key];
+      inDay.blocks.forEach((b) => {
+        b.subjectId = b.subjectId ? subjectIdMap[b.subjectId] || null : null;
+      });
+      const existing = state.days[key];
+      if (!existing) {
+        state.days[key] = inDay;
+        return;
+      }
+      if (!existing.focus && inDay.focus) existing.focus = inDay.focus;
+      if (inDay.touched) existing.touched = true;
+      if (Array.isArray(inDay.dismissedSeriesIds)) {
+        inDay.dismissedSeriesIds.forEach((sid) => markSeriesDismissed(existing, sid));
+      }
+      inDay.blocks.forEach((b) => {
+        const idx = existing.blocks.findIndex((x) => x.id === b.id);
+        if (idx === -1) existing.blocks.push(b);
+        else existing.blocks[idx] = b;
+      });
+    });
   }
 
   /**
@@ -968,43 +1414,7 @@
       return { ok: true, importedDays: dayKeys.length, importedBlocks: blockCount };
     }
 
-    // Merge subjects by ID, then by case-insensitive name; remap block subject IDs accordingly.
-    /** @type {Record<string, string>} */
-    const subjectIdMap = {};
-    incoming.subjects.forEach((s) => {
-      const byId = state.subjects.find((x) => x.id === s.id);
-      if (byId) {
-        subjectIdMap[s.id] = byId.id;
-        return;
-      }
-      const byName = state.subjects.find((x) => x.name.toLowerCase() === s.name.toLowerCase());
-      if (byName) {
-        subjectIdMap[s.id] = byName.id;
-        return;
-      }
-      state.subjects.push(s);
-      subjectIdMap[s.id] = s.id;
-    });
-
-    // Merge days by key and blocks by ID (imported block wins on ID conflict).
-    dayKeys.forEach((key) => {
-      const inDay = incoming.days[key];
-      inDay.blocks.forEach((b) => {
-        b.subjectId = b.subjectId ? subjectIdMap[b.subjectId] || null : null;
-      });
-      const existing = state.days[key];
-      if (!existing) {
-        state.days[key] = inDay;
-        return;
-      }
-      if (!existing.focus && inDay.focus) existing.focus = inDay.focus;
-      inDay.blocks.forEach((b) => {
-        const idx = existing.blocks.findIndex((x) => x.id === b.id);
-        if (idx === -1) existing.blocks.push(b);
-        else existing.blocks[idx] = b;
-      });
-    });
-
+    mergeIncomingStateIntoCurrent(incoming);
     commit('import-merge');
     return { ok: true, importedDays: dayKeys.length, importedBlocks: blockCount };
   }
@@ -1033,41 +1443,7 @@
   function mergeCloudState(rawData) {
     if (!isPlainObject(rawData)) return false;
     const incoming = sanitizeState(rawData, state.theme);
-    /** @type {Record<string, string>} */
-    const subjectIdMap = {};
-    incoming.subjects.forEach((s) => {
-      const byId = state.subjects.find((x) => x.id === s.id);
-      if (byId) {
-        subjectIdMap[s.id] = byId.id;
-        return;
-      }
-      const byName = state.subjects.find((x) => x.name.toLowerCase() === s.name.toLowerCase());
-      if (byName) {
-        subjectIdMap[s.id] = byName.id;
-        return;
-      }
-      state.subjects.push(s);
-      subjectIdMap[s.id] = s.id;
-    });
-
-    Object.keys(incoming.days).forEach((key) => {
-      const inDay = incoming.days[key];
-      inDay.blocks.forEach((b) => {
-        b.subjectId = b.subjectId ? subjectIdMap[b.subjectId] || null : null;
-      });
-      const existing = state.days[key];
-      if (!existing) {
-        state.days[key] = inDay;
-        return;
-      }
-      if (!existing.focus && inDay.focus) existing.focus = inDay.focus;
-      inDay.blocks.forEach((b) => {
-        const idx = existing.blocks.findIndex((x) => x.id === b.id);
-        if (idx === -1) existing.blocks.push(b);
-        else existing.blocks[idx] = b;
-      });
-    });
-
+    mergeIncomingStateIntoCurrent(incoming);
     markUserEdited();
     save();
     emit('cloud-sync');
@@ -1081,6 +1457,12 @@
     getState: getState,
     getTheme: getTheme,
     setTheme: setTheme,
+    getWeeklyRepeat: getWeeklyRepeat,
+    setWeeklyRepeat: setWeeklyRepeat,
+    getRecurringRules: getRecurringRules,
+    getRecurringRuleById: getRecurringRuleById,
+    saveRecurringRule: saveRecurringRule,
+    deleteRecurringRule: deleteRecurringRule,
     getSubjects: getSubjects,
     getSubjectById: getSubjectById,
     getBlockColor: getBlockColor,
@@ -1100,6 +1482,7 @@
     toggleSubtask: toggleSubtask,
     addFocusedMinutes: addFocusedMinutes,
     copyFromYesterday: copyFromYesterday,
+    copyFromLastWeek: copyFromLastWeek,
     moveBlockToTomorrow: moveBlockToTomorrow,
     getDayStats: getDayStats,
     getStudyStreak: getStudyStreak,

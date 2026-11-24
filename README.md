@@ -10,7 +10,8 @@
 - **Bộ đếm tập trung:** chế độ Pomodoro 25/5 hoặc đếm theo độ dài khung giờ. Đồng hồ dựa trên mốc thời gian nên vẫn chính xác khi bạn đổi ngày, đổi tab hoặc tải lại trang; thời gian đã học được tự động cộng vào khung giờ.
 - **Tổng quan trong ngày:** mục tiêu quan trọng nhất, phần trăm hoàn thành, thời gian đã lên lịch / thực học và chuỗi ngày học liên tiếp.
 - **Lịch nhỏ:** xem nhanh những ngày đã có kế hoạch.
-- **Tiện ích:** chép lịch từ hôm qua, chuyển khung giờ sang ngày mai, hoàn tác khi xoá hoặc dời, giao diện Sáng/Tối, dùng tốt trên điện thoại.
+- **Lặp lại hàng tuần:** bật công tắc **Lặp lại tuần** trên thanh bên để toàn bộ lịch học của tuần này tự động lặp sang các tuần tiếp theo (hoặc chọn lặp riêng từng khung giờ theo các thứ `T2 – CN`, kèm nút chép nhanh lịch tuần trước).
+- **Tiện ích:** chép lịch từ hôm qua / tuần trước, chuyển khung giờ sang ngày mai, hoàn tác khi xoá hoặc dời, giao diện Sáng/Tối, dùng tốt trên điện thoại.
 
 ## Cách chạy
 
