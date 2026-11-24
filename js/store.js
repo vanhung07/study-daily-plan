@@ -10,6 +10,7 @@
   const Utils = StudyPlan.Utils;
 
   const STORAGE_KEY = 'daily_study_plan_v1';
+  const USER_EDITED_KEY = STORAGE_KEY + '_user_edited';
   const STATE_VERSION = 1;
   const PRIORITIES = ['low', 'medium', 'high'];
   const MAX_STREAK_LOOKBACK = 3660;
@@ -377,10 +378,34 @@
   }
 
   /**
+   * Mark that the user has actively modified local data (distinguishes real data from initial seed).
+   */
+  function markUserEdited() {
+    try {
+      global.localStorage.setItem(USER_EDITED_KEY, '1');
+    } catch (e) {
+      /* ignore storage errors */
+    }
+  }
+
+  /**
+   * Check whether local data has been modified by the user (or synced from cloud).
+   * @returns {boolean}
+   */
+  function hasUserEdited() {
+    try {
+      return global.localStorage.getItem(USER_EDITED_KEY) === '1';
+    } catch (e) {
+      return true;
+    }
+  }
+
+  /**
    * Save and notify in one step.
    * @param {string} reason
    */
   function commit(reason) {
+    markUserEdited();
     save();
     emit(reason);
   }
@@ -984,6 +1009,71 @@
     return { ok: true, importedDays: dayKeys.length, importedBlocks: blockCount };
   }
 
+  /**
+   * Replace local state with sanitized state received from cloud sync.
+   * Does not trigger a cloud re-upload because listeners see reason === 'cloud-sync'.
+   * @param {unknown} rawData
+   * @returns {boolean}
+   */
+  function applyCloudState(rawData) {
+    if (!isPlainObject(rawData)) return false;
+    state = sanitizeState(rawData, state.theme);
+    markUserEdited();
+    save();
+    emit('cloud-sync');
+    return true;
+  }
+
+  /**
+   * Merge sanitized cloud state into current local state without losing local items.
+   * Emits 'cloud-sync' so callers can explicitly push the merged result back up.
+   * @param {unknown} rawData
+   * @returns {boolean}
+   */
+  function mergeCloudState(rawData) {
+    if (!isPlainObject(rawData)) return false;
+    const incoming = sanitizeState(rawData, state.theme);
+    /** @type {Record<string, string>} */
+    const subjectIdMap = {};
+    incoming.subjects.forEach((s) => {
+      const byId = state.subjects.find((x) => x.id === s.id);
+      if (byId) {
+        subjectIdMap[s.id] = byId.id;
+        return;
+      }
+      const byName = state.subjects.find((x) => x.name.toLowerCase() === s.name.toLowerCase());
+      if (byName) {
+        subjectIdMap[s.id] = byName.id;
+        return;
+      }
+      state.subjects.push(s);
+      subjectIdMap[s.id] = s.id;
+    });
+
+    Object.keys(incoming.days).forEach((key) => {
+      const inDay = incoming.days[key];
+      inDay.blocks.forEach((b) => {
+        b.subjectId = b.subjectId ? subjectIdMap[b.subjectId] || null : null;
+      });
+      const existing = state.days[key];
+      if (!existing) {
+        state.days[key] = inDay;
+        return;
+      }
+      if (!existing.focus && inDay.focus) existing.focus = inDay.focus;
+      inDay.blocks.forEach((b) => {
+        const idx = existing.blocks.findIndex((x) => x.id === b.id);
+        if (idx === -1) existing.blocks.push(b);
+        else existing.blocks[idx] = b;
+      });
+    });
+
+    markUserEdited();
+    save();
+    emit('cloud-sync');
+    return true;
+  }
+
   StudyPlan.Store = Object.freeze({
     STORAGE_KEY: STORAGE_KEY,
     init: init,
@@ -1015,6 +1105,9 @@
     getStudyStreak: getStudyStreak,
     exportJSONString: exportJSONString,
     previewImportJSON: previewImportJSON,
-    importJSONString: importJSONString
+    importJSONString: importJSONString,
+    hasUserEdited: hasUserEdited,
+    applyCloudState: applyCloudState,
+    mergeCloudState: mergeCloudState
   });
 })(window);

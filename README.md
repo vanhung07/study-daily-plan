@@ -33,14 +33,37 @@ daily-plan/
 │   ├── tokens.css      # Biến thiết kế: màu, khoảng cách (Sáng/Tối)
 │   └── styles.css      # Kiểu dáng các thành phần
 ├── js/
-│   ├── utils.js        # Hàm tiện ích: ngày giờ, định dạng, escape HTML
-│   ├── store.js        # Dữ liệu, lưu localStorage, thống kê, nhập/xuất JSON
-│   ├── timer.js        # Bộ đếm tập trung dựa trên mốc thời gian
-│   ├── timeline.js     # Lưới giờ, bố cục khung trùng nhau, kéo thả
-│   ├── ui.js           # Thanh bên, hộp thoại, thông báo, phím tắt
-│   └── app.js          # Khởi động ứng dụng
+│   ├── utils.js            # Hàm tiện ích: ngày giờ, định dạng, escape HTML
+│   ├── store.js            # Dữ liệu, lưu localStorage, thống kê, nhập/xuất JSON
+│   ├── timer.js            # Bộ đếm tập trung dựa trên mốc thời gian
+│   ├── timeline.js         # Lưới giờ, bố cục khung trùng nhau, kéo thả
+│   ├── firebase-config.js  # Cấu hình Firebase cho đồng bộ đám mây
+│   ├── sync.js             # Đồng bộ thời gian thực qua Firebase Auth + Firestore
+│   ├── ui.js               # Thanh bên, hộp thoại, thông báo, phím tắt
+│   └── app.js              # Khởi động ứng dụng
 └── README.md
 ```
+
+## Đồng bộ đám mây giữa điện thoại & máy tính (Firebase)
+
+Ứng dụng hỗ trợ đồng bộ thời gian thực miễn phí qua **Firebase Authentication (Google)** và **Cloud Firestore**:
+
+1. Tạo dự án miễn phí tại [Firebase Console](https://console.firebase.google.com/).
+2. Vào **Authentication → Sign-in method** và bật **Google**. Trong **Authentication → Settings → Authorized domains**, thêm tên miền web của bạn (ví dụ `vanhung07.github.io`).
+3. Vào **Firestore Database → Create database** (Production mode) và thiết lập **Rules** như sau để mỗi người dùng chỉ truy cập được dữ liệu của chính mình:
+
+```text
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    match /studyPlans/{userId} {
+      allow read, write: if request.auth != null && request.auth.uid == userId;
+    }
+  }
+}
+```
+
+4. Vào **Project Settings → Your apps → Web (`</>`)** để lấy `firebaseConfig`, sau đó điền vào tệp `js/firebase-config.js` (và đẩy lên GitHub để tự áp dụng cho mọi thiết bị), hoặc dán trực tiếp trong nút **Đồng bộ đám mây (Cài đặt)** trên giao diện web.
 
 ## Sao lưu và khôi phục (JSON)
 

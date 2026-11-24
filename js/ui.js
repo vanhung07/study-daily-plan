@@ -158,7 +158,12 @@
 
   /** @returns {boolean} True if any modal is currently visible. */
   function anyModalOpen() {
-    return isModalOpen(el.blockModal) || isModalOpen(el.importModal) || isModalOpen(el.confirmModal);
+    return (
+      isModalOpen(el.blockModal) ||
+      isModalOpen(el.importModal) ||
+      isModalOpen(el.confirmModal) ||
+      isModalOpen(el.cloudSetupModal)
+    );
   }
 
   /** Locks body scrolling while a modal is open. */
@@ -1198,13 +1203,15 @@
     }
 
     // Close on overlay click.
-    [el.blockModal, el.importModal].forEach(function (modal) {
+    [el.blockModal, el.importModal, el.cloudSetupModal].forEach(function (modal) {
       if (!modal) return;
       modal.addEventListener('mousedown', function (e) {
         if (e.target !== modal) return;
         if (modal === el.blockModal) closeBlockModal();
-        else {
+        else if (modal === el.importModal) {
           state.pendingImportText = '';
+          closeModal(modal);
+        } else {
           closeModal(modal);
         }
       });
@@ -1217,12 +1224,135 @@
   }
 
   /**
+   * Renders the cloud sync status card in the sidebar footer.
+   * @param {{ configured: boolean, configSource: string, sdkReady: boolean, user: { displayName: string, email: string, photoURL: string }|null, syncState: string, errorMessage: string }} [syncStatus]
+   */
+  function renderCloudSync(syncStatus) {
+    var Sync = window.StudyPlan.Sync;
+    var s = syncStatus || (Sync ? Sync.getStatus() : null);
+    if (!s || !el.cloudSyncBox) return;
+
+    var isSignedIn = Boolean(s.user);
+    var isConfigured = Boolean(s.configured);
+
+    if (el.btnCloudSetup) el.btnCloudSetup.classList.toggle('hidden', isConfigured);
+    if (el.cloudSignedOut) el.cloudSignedOut.classList.toggle('hidden', !isConfigured || isSignedIn);
+    if (el.cloudSignedIn) el.cloudSignedIn.classList.toggle('hidden', !isSignedIn);
+
+    if (el.btnCloudConfigEdit) {
+      el.btnCloudConfigEdit.classList.toggle('hidden', s.configSource === 'file');
+    }
+    if (el.btnCloudConfigClear) {
+      el.btnCloudConfigClear.classList.toggle('hidden', s.configSource !== 'local');
+    }
+
+    if (isSignedIn && s.user) {
+      if (el.cloudUserName) {
+        el.cloudUserName.textContent = s.user.displayName || s.user.email || 'Người dùng';
+        el.cloudUserName.title = s.user.email || '';
+      }
+      if (el.cloudUserAvatar) {
+        if (s.user.photoURL) {
+          el.cloudUserAvatar.innerHTML = '<img src="' + esc(s.user.photoURL) + '" alt="" referrerpolicy="no-referrer" />';
+        } else {
+          var initial = (s.user.displayName || s.user.email || 'U').trim().charAt(0).toUpperCase();
+          el.cloudUserAvatar.textContent = initial;
+        }
+      }
+      var labelMap = {
+        connecting: 'Đang kết nối...',
+        syncing: 'Đang đồng bộ...',
+        synced: 'Đã đồng bộ',
+        offline: 'Ngoại tuyến',
+        error: 'Lỗi đồng bộ'
+      };
+      if (el.cloudSyncStatus) {
+        el.cloudSyncStatus.textContent = labelMap[s.syncState] || 'Đã đồng bộ';
+        el.cloudSyncStatus.title = s.errorMessage || '';
+      }
+      if (el.cloudSyncDot) {
+        el.cloudSyncDot.className = 'cloud-sync-dot cloud-sync-dot--' + (s.syncState || 'synced');
+      }
+    }
+  }
+
+  /** Opens the Firebase setup modal. */
+  function openCloudSetupModal() {
+    if (!el.cloudSetupModal) return;
+    if (el.cloudConfigError) {
+      el.cloudConfigError.textContent = '';
+      el.cloudConfigError.classList.add('hidden');
+    }
+    if (el.cloudConfigInput) el.cloudConfigInput.value = '';
+    renderCloudSync();
+    openModal(el.cloudSetupModal);
+    if (el.cloudConfigInput) el.cloudConfigInput.focus();
+  }
+
+  /** Binds cloud sync buttons and setup modal events. */
+  function bindCloudSyncEvents() {
+    var Sync = window.StudyPlan.Sync;
+    if (!Sync) return;
+
+    if (el.btnCloudSetup) {
+      el.btnCloudSetup.addEventListener('click', openCloudSetupModal);
+    }
+    if (el.btnCloudConfigEdit) {
+      el.btnCloudConfigEdit.addEventListener('click', openCloudSetupModal);
+    }
+    if (el.btnCloseCloudSetup) {
+      el.btnCloseCloudSetup.addEventListener('click', function () { closeModal(el.cloudSetupModal); });
+    }
+    if (el.btnCloudSetupCancel) {
+      el.btnCloudSetupCancel.addEventListener('click', function () { closeModal(el.cloudSetupModal); });
+    }
+    if (el.btnCloudConfigSave) {
+      el.btnCloudConfigSave.addEventListener('click', function () {
+        var raw = el.cloudConfigInput ? el.cloudConfigInput.value : '';
+        var res = Sync.saveRuntimeConfig(raw);
+        if (!res.ok) {
+          if (el.cloudConfigError) {
+            el.cloudConfigError.textContent = res.error || 'Cấu hình không hợp lệ.';
+            el.cloudConfigError.classList.remove('hidden');
+          }
+          return;
+        }
+        closeModal(el.cloudSetupModal);
+        showToast('Đã lưu cấu hình Firebase. Bạn có thể đăng nhập Google ngay!');
+      });
+    }
+    if (el.btnCloudConfigClear) {
+      el.btnCloudConfigClear.addEventListener('click', function () {
+        Sync.clearRuntimeConfig();
+        closeModal(el.cloudSetupModal);
+        showToast('Đã xóa cấu hình Firebase trên trình duyệt này.');
+      });
+    }
+    if (el.btnGoogleSignIn) {
+      el.btnGoogleSignIn.addEventListener('click', function () {
+        Sync.signInWithGoogle();
+      });
+    }
+    if (el.btnCloudSyncNow) {
+      el.btnCloudSyncNow.addEventListener('click', function () {
+        Sync.syncNow();
+      });
+    }
+    if (el.btnCloudSignOut) {
+      el.btnCloudSignOut.addEventListener('click', function () {
+        Sync.signOut();
+      });
+    }
+  }
+
+  /**
    * Global keyboard shortcuts.
    * @param {KeyboardEvent} e
    */
   function onKeyDown(e) {
     if (e.key === 'Escape') {
       if (isModalOpen(el.confirmModal)) resolveConfirm(false);
+      else if (isModalOpen(el.cloudSetupModal)) closeModal(el.cloudSetupModal);
       else if (isModalOpen(el.importModal)) {
         state.pendingImportText = '';
         closeModal(el.importModal);
@@ -1333,6 +1463,25 @@
       confirmMessage: 'confirm-modal-message',
       confirmCancel: 'btn-confirm-cancel',
       confirmOk: 'btn-confirm-ok',
+      cloudSyncBox: 'cloud-sync-box',
+      btnCloudSetup: 'btn-cloud-setup',
+      cloudSignedOut: 'cloud-signed-out',
+      btnGoogleSignIn: 'btn-google-signin',
+      btnCloudConfigEdit: 'btn-cloud-config-edit',
+      cloudSignedIn: 'cloud-signed-in',
+      cloudUserAvatar: 'cloud-user-avatar',
+      cloudUserName: 'cloud-user-name',
+      cloudSyncDot: 'cloud-sync-dot',
+      cloudSyncStatus: 'cloud-sync-status',
+      btnCloudSyncNow: 'btn-cloud-sync-now',
+      btnCloudSignOut: 'btn-cloud-signout',
+      cloudSetupModal: 'cloud-setup-modal',
+      btnCloseCloudSetup: 'btn-close-cloud-setup',
+      cloudConfigInput: 'cloud-config-input',
+      cloudConfigError: 'cloud-config-error',
+      btnCloudConfigClear: 'btn-cloud-config-clear',
+      btnCloudSetupCancel: 'btn-cloud-setup-cancel',
+      btnCloudConfigSave: 'btn-cloud-config-save',
       toastContainer: 'toast-container'
     };
     Object.keys(ids).forEach(function (key) {
@@ -1362,6 +1511,7 @@
     renderSubjectSwatches();
     bindShellEvents();
     bindBlockModalEvents();
+    bindCloudSyncEvents();
     document.addEventListener('keydown', onKeyDown);
 
     Timeline.init({
@@ -1377,6 +1527,10 @@
     Store.subscribe(renderAll);
     Timer.subscribe(renderTimerBar);
     Timer.onComplete(handleTimerComplete);
+    if (window.StudyPlan.Sync && typeof window.StudyPlan.Sync.subscribe === 'function') {
+      window.StudyPlan.Sync.subscribe(renderCloudSync);
+      renderCloudSync();
+    }
 
     initialized = true;
     if (el.dailyFocus) el.dailyFocus.value = Store.getDay(state.currentDateKey).focus || '';

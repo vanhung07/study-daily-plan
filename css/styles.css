@@ -763,6 +763,176 @@ button {
   flex-shrink: 0;
 }
 
+/* --- Cloud Sync Widget --- */
+.cloud-sync-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.cloud-sync-full-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.cloud-signed-out {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.cloud-google-btn {
+  flex: 1;
+  justify-content: center;
+}
+
+.cloud-config-btn {
+  width: 30px;
+  height: 30px;
+  flex-shrink: 0;
+  border: 1px solid var(--border-hairline);
+  border-radius: var(--radius-sm);
+}
+
+.cloud-user-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 7px 8px;
+  border-radius: var(--radius-md);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+}
+
+.cloud-user-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  flex: 1;
+}
+
+.cloud-user-avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: var(--radius-full);
+  background-color: var(--accent-soft, rgba(79, 70, 229, 0.12));
+  color: var(--accent-primary, #4f46e5);
+  font-size: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.cloud-user-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.cloud-user-meta {
+  min-width: 0;
+  flex: 1;
+}
+
+.cloud-user-name {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-primary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.25;
+}
+
+.cloud-status-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  margin-top: 2px;
+}
+
+.cloud-sync-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: var(--radius-full);
+  background-color: #10b981;
+  flex-shrink: 0;
+}
+
+.cloud-sync-dot--synced {
+  background-color: #10b981;
+}
+
+.cloud-sync-dot--syncing,
+.cloud-sync-dot--connecting {
+  background-color: #f59e0b;
+  animation: cloud-pulse 1.1s ease-in-out infinite;
+}
+
+.cloud-sync-dot--offline {
+  background-color: #94a3b8;
+}
+
+.cloud-sync-dot--error {
+  background-color: #ef4444;
+}
+
+@keyframes cloud-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+
+.cloud-sync-status {
+  font-size: 11px;
+  color: var(--text-muted);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.cloud-user-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.cloud-action-btn {
+  width: 26px;
+  height: 26px;
+}
+
+.cloud-setup-steps {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text-secondary);
+}
+
+.cloud-setup-steps code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 11.5px;
+  padding: 1px 4px;
+  border-radius: var(--radius-xs);
+  background-color: var(--bg-subtle);
+  color: var(--text-primary);
+}
+
+.cloud-config-textarea {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
 .backup-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;

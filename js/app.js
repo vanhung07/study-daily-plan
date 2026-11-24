@@ -29,6 +29,9 @@
     document.documentElement.setAttribute('data-theme', sp.Store.getTheme() === 'dark' ? 'dark' : 'light');
     sp.Timer.init();
     sp.UI.init();
+    if (sp.Sync && typeof sp.Sync.init === 'function') {
+      sp.Sync.init();
+    }
     sp.UI.render();
 
     // Wait one frame so the layout is final before scrolling.
