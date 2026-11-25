@@ -1,6 +1,6 @@
 /* ==========================================================================
    Design Tokens — StudyPlan (Notion Warm Minimalist)
-   Supports Light (default) and Dark ([data-theme="dark"]) modes
+   Supports Light (default) and Dark ([data-theme="dark"], [data-color-scheme="dark"]) modes
    ========================================================================== */
 
 :root {
@@ -110,9 +110,10 @@
 }
 
 /* --------------------------------------------------------------------------
-   Dark Theme Overrides (Calm Charcoal)
+   Dark Scheme Base Defaults (Shared across dark, anime-cyber, nordic-aurora)
    -------------------------------------------------------------------------- */
-[data-theme="dark"] {
+[data-theme="dark"],
+[data-color-scheme="dark"] {
   color-scheme: dark;
 
   --bg-app: #191919;
@@ -245,9 +246,10 @@
 }
 
 /* ==========================================================================
-   Notion Calendar Subject Color Palette — Dark Mode
+   Notion Calendar Subject Color Palette — Dark Scheme Themes
    ========================================================================== */
-[data-theme="dark"] [data-color="blue"] {
+[data-theme="dark"] [data-color="blue"],
+[data-color-scheme="dark"] [data-color="blue"] {
   --item-bar: #589cf7;
   --item-bg: rgba(88, 156, 247, 0.15);
   --item-bg-hover: rgba(88, 156, 247, 0.23);
@@ -255,7 +257,8 @@
   --item-text: #cfe3ff;
 }
 
-[data-theme="dark"] [data-color="purple"] {
+[data-theme="dark"] [data-color="purple"],
+[data-color-scheme="dark"] [data-color="purple"] {
   --item-bar: #a78bfa;
   --item-bg: rgba(167, 139, 250, 0.15);
   --item-bg-hover: rgba(167, 139, 250, 0.23);
@@ -263,7 +266,8 @@
   --item-text: #e6dcff;
 }
 
-[data-theme="dark"] [data-color="emerald"] {
+[data-theme="dark"] [data-color="emerald"],
+[data-color-scheme="dark"] [data-color="emerald"] {
   --item-bar: #34d399;
   --item-bg: rgba(52, 211, 153, 0.14);
   --item-bg-hover: rgba(52, 211, 153, 0.22);
@@ -271,7 +275,8 @@
   --item-text: #caf8e6;
 }
 
-[data-theme="dark"] [data-color="amber"] {
+[data-theme="dark"] [data-color="amber"],
+[data-color-scheme="dark"] [data-color="amber"] {
   --item-bar: #f5bf42;
   --item-bg: rgba(245, 191, 66, 0.15);
   --item-bg-hover: rgba(245, 191, 66, 0.23);
@@ -279,7 +284,8 @@
   --item-text: #feeab8;
 }
 
-[data-theme="dark"] [data-color="rose"] {
+[data-theme="dark"] [data-color="rose"],
+[data-color-scheme="dark"] [data-color="rose"] {
   --item-bar: #fb7185;
   --item-bg: rgba(251, 113, 133, 0.15);
   --item-bg-hover: rgba(251, 113, 133, 0.23);
@@ -287,7 +293,8 @@
   --item-text: #ffd6dd;
 }
 
-[data-theme="dark"] [data-color="cyan"] {
+[data-theme="dark"] [data-color="cyan"],
+[data-color-scheme="dark"] [data-color="cyan"] {
   --item-bar: #22d3ee;
   --item-bg: rgba(34, 211, 238, 0.14);
   --item-bg-hover: rgba(34, 211, 238, 0.22);
@@ -295,7 +302,8 @@
   --item-text: #c7f6fe;
 }
 
-[data-theme="dark"] [data-color="orange"] {
+[data-theme="dark"] [data-color="orange"],
+[data-color-scheme="dark"] [data-color="orange"] {
   --item-bar: #fb923c;
   --item-bg: rgba(251, 146, 60, 0.15);
   --item-bg-hover: rgba(251, 146, 60, 0.23);
@@ -303,7 +311,8 @@
   --item-text: #ffe1c7;
 }
 
-[data-theme="dark"] [data-color="slate"] {
+[data-theme="dark"] [data-color="slate"],
+[data-color-scheme="dark"] [data-color="slate"] {
   --item-bar: #9b9a97;
   --item-bg: rgba(155, 154, 151, 0.14);
   --item-bg-hover: rgba(155, 154, 151, 0.22);

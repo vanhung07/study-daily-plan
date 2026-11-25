@@ -5,32 +5,46 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>StudyPlan — Lập kế hoạch học tập hằng ngày</title>
 
-  <!-- Google Font: Inter -->
+  <!-- Google Fonts: Inter & Nunito -->
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link
-    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Nunito:wght@600;700&display=swap"
     rel="stylesheet"
   />
 
-  <!-- Early theme initializer to prevent light/dark flash -->
+  <!-- Early theme initializer to prevent light/dark/theme flash -->
   <script>
     (function () {
       try {
+        var validThemes = [
+          'light',
+          'dark',
+          'doraemon',
+          'anime-sakura',
+          'ghibli-meadow',
+          'anime-cyber',
+          'cupertino-glass',
+          'nordic-aurora'
+        ];
+        var darkThemes = ['dark', 'anime-cyber', 'nordic-aurora'];
         var raw = localStorage.getItem('daily_study_plan_v1');
         var theme = null;
         if (raw) {
           var parsed = JSON.parse(raw);
-          if (parsed && (parsed.theme === 'dark' || parsed.theme === 'light')) {
+          if (parsed && validThemes.indexOf(parsed.theme) !== -1) {
             theme = parsed.theme;
           }
         }
-        if (!theme && window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
-          theme = 'dark';
+        if (!theme) {
+          theme =
+            window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches
+              ? 'dark'
+              : 'light';
         }
-        if (theme === 'dark') {
-          document.documentElement.setAttribute('data-theme', 'dark');
-        }
+        var scheme = darkThemes.indexOf(theme) !== -1 ? 'dark' : 'light';
+        document.documentElement.setAttribute('data-theme', theme);
+        document.documentElement.setAttribute('data-color-scheme', scheme);
       } catch (e) {
         // Ignore storage access errors in restricted environments
       }
@@ -39,6 +53,7 @@
 
   <link rel="stylesheet" href="css/tokens.css" />
   <link rel="stylesheet" href="css/styles.css" />
+  <link rel="stylesheet" href="css/themes.css" />
 </head>
 <body>
   <div class="app-shell">
@@ -70,6 +85,22 @@
             <span id="streak-count">0</span>
             <span>ngày</span>
           </div>
+
+          <button
+            type="button"
+            id="btn-sidebar-theme"
+            class="icon-btn"
+            aria-label="Mở bộ sưu tập giao diện"
+            title="Bộ sưu tập Giao diện"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="13.5" cy="6.5" r="1" fill="currentColor"></circle>
+              <circle cx="17.5" cy="10.5" r="1" fill="currentColor"></circle>
+              <circle cx="8.5" cy="7.5" r="1" fill="currentColor"></circle>
+              <circle cx="6.5" cy="12.5" r="1" fill="currentColor"></circle>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.43-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.65 1.65 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C22 6.01 17.5 2 12 2z"></path>
+            </svg>
+          </button>
 
           <button
             type="button"
@@ -115,6 +146,18 @@
       <div class="sidebar-scroll">
         <!-- Mini Calendar Section -->
         <section class="sidebar-section" aria-label="Lịch tháng thu gọn">
+          <div class="section-heading">
+            <span class="section-title section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect x="3" y="4" width="18" height="18" rx="2.5"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <span>Lịch tháng</span>
+            </span>
+          </div>
+
           <div class="mini-cal-header">
             <h2 id="mini-cal-title" class="mini-cal-title">Tháng 11, 2026</h2>
             <div class="mini-cal-nav">
@@ -192,7 +235,14 @@
         <!-- Daily Focus Section -->
         <section class="sidebar-section" aria-label="Trọng tâm trong ngày">
           <div class="section-heading">
-            <label for="daily-focus-input" class="section-title">Trọng tâm hôm nay</label>
+            <label for="daily-focus-input" class="section-title section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="10"></circle>
+                <circle cx="12" cy="12" r="6"></circle>
+                <circle cx="12" cy="12" r="2"></circle>
+              </svg>
+              <span>Trọng tâm hôm nay</span>
+            </label>
           </div>
           <textarea
             id="daily-focus-input"
@@ -205,7 +255,12 @@
         <!-- Daily Progress Section -->
         <section class="sidebar-section" aria-label="Tiến độ học tập trong ngày">
           <div class="section-heading">
-            <span class="section-title">Tiến độ hôm nay</span>
+            <span class="section-title section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"></polyline>
+              </svg>
+              <span>Tiến độ hôm nay</span>
+            </span>
             <span id="progress-percent" class="progress-percent">0%</span>
           </div>
 
@@ -215,19 +270,43 @@
 
           <div class="stats-grid">
             <div class="stat-card">
-              <span class="stat-label">Hoàn thành</span>
+              <span class="stat-label stat-card-head">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+                  <polyline points="22 4 12 14.01 9 11.01"></polyline>
+                </svg>
+                <span>Hoàn thành</span>
+              </span>
               <span id="stat-completed" class="stat-value">0p</span>
             </div>
             <div class="stat-card">
-              <span class="stat-label">Đã lên lịch</span>
+              <span class="stat-label stat-card-head">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="12" cy="12" r="10"></circle>
+                  <polyline points="12 6 12 12 16 14"></polyline>
+                </svg>
+                <span>Đã lên lịch</span>
+              </span>
               <span id="stat-planned" class="stat-value">0p</span>
             </div>
             <div class="stat-card">
-              <span class="stat-label">Thực học</span>
+              <span class="stat-label stat-card-head">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+                </svg>
+                <span>Thực học</span>
+              </span>
               <span id="stat-focused" class="stat-value">0p</span>
             </div>
             <div class="stat-card">
-              <span class="stat-label">Khung giờ</span>
+              <span class="stat-label stat-card-head">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <rect x="3" y="4" width="18" height="16" rx="2"></rect>
+                  <line x1="8" y1="10" x2="16" y2="10"></line>
+                  <line x1="8" y1="14" x2="13" y2="14"></line>
+                </svg>
+                <span>Khung giờ</span>
+              </span>
               <span id="stat-tasks" class="stat-value">0/0</span>
             </div>
           </div>
@@ -236,7 +315,13 @@
         <!-- Subjects Section -->
         <section class="sidebar-section sidebar-section--subjects" aria-label="Danh sách môn học">
           <div class="section-heading">
-            <span class="section-title">Môn học</span>
+            <span class="section-title section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <span>Môn học</span>
+            </span>
             <button
               type="button"
               id="btn-toggle-add-subject"
@@ -407,6 +492,23 @@
         </div>
 
         <div class="header-right">
+          <button
+            type="button"
+            id="btn-theme-gallery"
+            class="btn btn-theme-trigger"
+            aria-label="Mở bộ sưu tập giao diện"
+            title="Bộ sưu tập Giao diện"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="13.5" cy="6.5" r="1" fill="currentColor"></circle>
+              <circle cx="17.5" cy="10.5" r="1" fill="currentColor"></circle>
+              <circle cx="8.5" cy="7.5" r="1" fill="currentColor"></circle>
+              <circle cx="6.5" cy="12.5" r="1" fill="currentColor"></circle>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.43-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.65 1.65 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C22 6.01 17.5 2 12 2z"></path>
+            </svg>
+            <span id="current-theme-label">Giao diện</span>
+          </button>
+
           <div class="date-nav-group" role="group" aria-label="Điều hướng ngày">
             <button
               type="button"
@@ -505,6 +607,106 @@
         </div>
       </section>
 
+      <!-- Subtle Theme Ambient SVG Watermarks (Non-interactive) -->
+      <div id="theme-ambient-decor" class="theme-ambient-decor" aria-hidden="true">
+        <!-- 1. Doraemon Sky: Fluffy 22nd-century clouds, 4D pocket silhouette & golden bell -->
+        <svg class="decor-svg decor-doraemon" viewBox="0 0 280 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M44 88C44 75.85 53.85 66 66 66C69.4 66 72.6 66.77 75.47 68.15C80.12 58.6 89.93 52 101.28 52C116.53 52 129 63.92 129.94 78.94C131.88 78.33 133.95 78 136.1 78C147.09 78 156 86.91 156 97.9C156 108.89 147.09 117.8 136.1 117.8H66C53.85 117.8 44 107.95 44 95.8V88Z" fill="#7CC6F5" fill-opacity="0.28" />
+          <path d="M168 48C168 40.27 174.27 34 182 34C184.4 34 186.66 34.61 188.63 35.68C191.79 29.91 197.92 26 205 26C214.95 26 223.11 33.76 223.93 43.5C230.69 44.42 236 50.2 236 57.2C236 64.82 229.82 71 222.2 71H182C174.27 71 168 64.73 168 57V48Z" fill="#0096E6" fill-opacity="0.16" />
+          <!-- 4D Pocket Semicircle -->
+          <path d="M150 148H254C254 176.72 230.72 200 202 200C173.28 200 150 176.72 150 148Z" fill="#FFFFFF" fill-opacity="0.72" stroke="#0096E6" stroke-opacity="0.38" stroke-width="2.5" />
+          <!-- Red Collar & Golden Bell -->
+          <rect x="164" y="138" width="76" height="8" rx="4" fill="#E60012" fill-opacity="0.52" />
+          <circle cx="202" cy="148" r="14" fill="#F5C400" fill-opacity="0.78" stroke="#B45309" stroke-opacity="0.55" stroke-width="2" />
+          <line x1="189" y1="146" x2="215" y2="146" stroke="#B45309" stroke-opacity="0.55" stroke-width="2" />
+          <circle cx="202" cy="152" r="2.6" fill="#78350F" fill-opacity="0.68" />
+          <line x1="202" y1="154.5" x2="202" y2="161" stroke="#78350F" stroke-opacity="0.68" stroke-width="2" />
+        </svg>
+
+        <!-- 2. Anime Sakura: Soft sakura blossoms & drifting spring petals -->
+        <svg class="decor-svg decor-sakura" viewBox="0 0 300 260" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <g transform="translate(215 175) rotate(-14)">
+            <path d="M0 -34C10 -34 16 -18 11 -6C22 -12 36 -5 32 6L26 8L30 13C24 23 8 20 3 9C6 22 -2 35 -12 31L-13 25L-18 29C-28 22 -22 7 -11 3C-23 5 -35 -4 -30 -14L-24 -15L-28 -20C-20 -30 -6 -22 0 -11C-4 -23 0 -34 0 -34Z" fill="#F472B6" fill-opacity="0.28" stroke="#EC4899" stroke-opacity="0.35" stroke-width="1.4" />
+            <circle cx="0" cy="0" r="5" fill="#F9A8D4" fill-opacity="0.65" />
+          </g>
+          <g transform="translate(132 214) scale(0.68) rotate(22)">
+            <path d="M0 -34C10 -34 16 -18 11 -6C22 -12 36 -5 32 6L26 8L30 13C24 23 8 20 3 9C6 22 -2 35 -12 31L-13 25L-18 29C-28 22 -22 7 -11 3C-23 5 -35 -4 -30 -14L-24 -15L-28 -20C-20 -30 -6 -22 0 -11C-4 -23 0 -34 0 -34Z" fill="#F9A8D4" fill-opacity="0.34" />
+            <circle cx="0" cy="0" r="4.5" fill="#EC4899" fill-opacity="0.45" />
+          </g>
+          <!-- Drifting single petals -->
+          <path d="M248 92C258 84 270 90 264 102C258 112 244 108 248 92Z" fill="#F472B6" fill-opacity="0.36" />
+          <path d="M175 124C183 118 193 123 188 133C183 141 171 138 175 124Z" fill="#C084FC" fill-opacity="0.3" />
+          <path d="M88 188C95 182 104 186 100 195C96 202 85 199 88 188Z" fill="#F472B6" fill-opacity="0.32" />
+          <path d="M262 222C269 216 278 221 273 229C269 236 259 233 262 222Z" fill="#F9A8D4" fill-opacity="0.42" />
+        </svg>
+
+        <!-- 3. Ghibli Meadow: Friendly soot-sprites & gentle countryside leaf breeze -->
+        <svg class="decor-svg decor-ghibli" viewBox="0 0 290 220" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M36 186C94 178 145 142 252 152" stroke="#2F7D57" stroke-opacity="0.24" stroke-width="2" stroke-linecap="round" stroke-dasharray="5 6" />
+          <path d="M82 204C138 198 186 176 268 184" stroke="#65A30D" stroke-opacity="0.24" stroke-width="1.8" stroke-linecap="round" />
+          <!-- Soot Sprite 1 -->
+          <g transform="translate(218 168)">
+            <circle cx="0" cy="0" r="18" fill="#233123" fill-opacity="0.22" />
+            <circle cx="-5.5" cy="-2" r="4.2" fill="#FFFFFF" fill-opacity="0.88" />
+            <circle cx="5.5" cy="-2" r="4.2" fill="#FFFFFF" fill-opacity="0.88" />
+            <circle cx="-5" cy="-2" r="1.7" fill="#233123" fill-opacity="0.78" />
+            <circle cx="5" cy="-2" r="1.7" fill="#233123" fill-opacity="0.78" />
+          </g>
+          <!-- Soot Sprite 2 (tiny) -->
+          <g transform="translate(172 184)">
+            <circle cx="0" cy="0" r="12" fill="#233123" fill-opacity="0.18" />
+            <circle cx="-3.8" cy="-1.5" r="3" fill="#FFFFFF" fill-opacity="0.85" />
+            <circle cx="3.8" cy="-1.5" r="3" fill="#FFFFFF" fill-opacity="0.85" />
+            <circle cx="-3.5" cy="-1.5" r="1.2" fill="#233123" fill-opacity="0.75" />
+            <circle cx="3.5" cy="-1.5" r="1.2" fill="#233123" fill-opacity="0.75" />
+          </g>
+          <!-- Floating Meadow Leaves & Konpeito Candy Stars -->
+          <path d="M138 148C148 136 164 138 162 152C152 162 138 158 138 148Z" fill="#2F7D57" fill-opacity="0.28" />
+          <path d="M242 120C250 110 263 112 261 124C252 132 242 128 242 120Z" fill="#65A30D" fill-opacity="0.28" />
+          <circle cx="196" cy="146" r="3.5" fill="#F59E0B" fill-opacity="0.45" />
+          <circle cx="248" cy="188" r="3" fill="#EC4899" fill-opacity="0.38" />
+        </svg>
+
+        <!-- 4. Starlight Lofi: Shooting anime comet arc & twinkling stars -->
+        <svg class="decor-svg decor-starlight" viewBox="0 0 320 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="cometGrad" x1="20" y1="190" x2="275" y2="38" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#8B5CF6" stop-opacity="0" />
+              <stop offset="55%" stop-color="#8B5CF6" stop-opacity="0.36" />
+              <stop offset="100%" stop-color="#38BDF8" stop-opacity="0.82" />
+            </linearGradient>
+          </defs>
+          <!-- Shooting Comet Trail -->
+          <path d="M26 186Q142 98 272 40" stroke="url(#cometGrad)" stroke-width="3.2" stroke-linecap="round" />
+          <path d="M68 172Q168 102 272 40" stroke="#EC4899" stroke-opacity="0.25" stroke-width="1.5" stroke-linecap="round" />
+          <circle cx="272" cy="40" r="5" fill="#E0F2FE" fill-opacity="0.9" />
+          <circle cx="272" cy="40" r="11" fill="#38BDF8" fill-opacity="0.26" />
+          <!-- 4-Point Twinkling Anime Stars -->
+          <path d="M214 96L217 105L226 108L217 111L214 120L211 111L202 108L211 105L214 96Z" fill="#C4B5FD" fill-opacity="0.65" />
+          <path d="M282 114L284 120L290 122L284 124L282 130L280 124L274 122L280 120L282 114Z" fill="#F472B6" fill-opacity="0.58" />
+          <path d="M148 62L150 68L156 70L150 72L148 78L146 72L140 70L146 68L148 62Z" fill="#38BDF8" fill-opacity="0.55" />
+          <circle cx="186" cy="52" r="2" fill="#F1F0FF" fill-opacity="0.55" />
+          <circle cx="252" cy="156" r="2.2" fill="#C4B5FD" fill-opacity="0.5" />
+          <circle cx="118" cy="134" r="1.8" fill="#38BDF8" fill-opacity="0.45" />
+        </svg>
+
+        <!-- 5. Nordic Fjord: Flowing aurora borealis ribbon & fjord mountain silhouette -->
+        <svg class="decor-svg decor-nordic" viewBox="0 0 360 240" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="auroraRibbon1" x1="40" y1="40" x2="340" y2="150" gradientUnits="userSpaceOnUse">
+              <stop offset="0%" stop-color="#88C0D0" stop-opacity="0" />
+              <stop offset="45%" stop-color="#88C0D0" stop-opacity="0.28" />
+              <stop offset="85%" stop-color="#A3BE8C" stop-opacity="0.32" />
+              <stop offset="100%" stop-color="#B48EAD" stop-opacity="0.12" />
+            </linearGradient>
+          </defs>
+          <path d="M24 132C96 78 168 156 246 98C288 66 326 74 356 54V126C320 144 284 132 242 160C166 210 96 144 24 186V132Z" fill="url(#auroraRibbon1)" />
+          <path d="M110 240L188 168L244 214L296 156L360 222V240H110Z" fill="#3B4252" fill-opacity="0.48" />
+          <path d="M188 168L212 190L196 194L188 184L178 192L168 186L188 168Z" fill="#ECEFF4" fill-opacity="0.18" />
+          <path d="M296 156L318 179L304 182L296 172L285 181L276 175L296 156Z" fill="#88C0D0" fill-opacity="0.22" />
+        </svg>
+      </div>
+
       <!-- Daily Interactive Timeline Viewport -->
       <div id="timeline-scroll" class="timeline-scroll" tabindex="0" aria-label="Lịch trình học tập theo khung giờ từ 05:00 đến 24:00">
         <div class="timeline-body">
@@ -594,7 +796,13 @@
         <div class="modal-body">
           <!-- Title -->
           <div class="form-field">
-            <label for="block-title" class="field-label">Nội dung học</label>
+            <label for="block-title" class="field-label section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M12 20h9"></path>
+                <path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+              </svg>
+              <span>Nội dung học</span>
+            </label>
             <input
               type="text"
               id="block-title"
@@ -610,12 +818,24 @@
           <div class="form-field">
             <div class="time-range-grid">
               <div class="time-input-col">
-                <label for="block-start" class="field-label">Bắt đầu</label>
+                <label for="block-start" class="field-label section-title-with-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span>Bắt đầu</span>
+                </label>
                 <input type="time" id="block-start" class="field-input" step="900" required />
               </div>
               <span class="time-range-sep" aria-hidden="true">→</span>
               <div class="time-input-col">
-                <label for="block-end" class="field-label">Kết thúc</label>
+                <label for="block-end" class="field-label section-title-with-icon">
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <polyline points="12 6 12 12 16 14"></polyline>
+                  </svg>
+                  <span>Kết thúc</span>
+                </label>
                 <input type="time" id="block-end" class="field-input" step="900" required />
               </div>
             </div>
@@ -631,13 +851,25 @@
 
           <!-- Subject Picker -->
           <div class="form-field">
-            <span class="field-label">Môn học</span>
+            <span class="field-label section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path>
+                <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path>
+              </svg>
+              <span>Môn học</span>
+            </span>
             <div id="modal-subject-picker" class="subject-picker" role="radiogroup" aria-label="Chọn môn học"></div>
           </div>
 
           <!-- Priority Picker -->
           <div class="form-field">
-            <span class="field-label">Mức độ ưu tiên</span>
+            <span class="field-label section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+                <line x1="4" y1="22" x2="4" y2="15"></line>
+              </svg>
+              <span>Mức độ ưu tiên</span>
+            </span>
             <div id="priority-picker" class="segmented-control" role="radiogroup" aria-label="Mức độ ưu tiên">
               <button type="button" class="seg-option" data-priority="low">Thấp</button>
               <button type="button" class="seg-option active" data-priority="medium">Trung bình</button>
@@ -648,7 +880,15 @@
           <!-- Weekly Recurrence Picker -->
           <div class="form-field">
             <div class="field-label-row">
-              <span class="field-label">Lặp lại hàng tuần</span>
+              <span class="field-label section-title-with-icon">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <polyline points="17 1 21 5 17 9"></polyline>
+                  <path d="M3 11V9a4 4 0 0 1 4-4h14"></path>
+                  <polyline points="7 23 3 19 7 15"></polyline>
+                  <path d="M21 13v2a4 4 0 0 1-4 4H3"></path>
+                </svg>
+                <span>Lặp lại hàng tuần</span>
+              </span>
               <button type="button" id="btn-repeat-quick" class="btn-text-action">Lặp thứ này</button>
             </div>
             <div id="repeat-days-picker" class="repeat-days-picker" role="group" aria-label="Chọn các thứ lặp lại hàng tuần">
@@ -665,7 +905,13 @@
 
           <!-- Sub-tasks Checklist -->
           <div class="form-field">
-            <label for="subtask-input" class="field-label">Đầu việc nhỏ (Sub-tasks)</label>
+            <label for="subtask-input" class="field-label section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 11 12 14 22 4"></polyline>
+                <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"></path>
+              </svg>
+              <span>Đầu việc nhỏ (Sub-tasks)</span>
+            </label>
             <div class="subtask-input-row">
               <input
                 type="text"
@@ -682,7 +928,15 @@
 
           <!-- Notes -->
           <div class="form-field">
-            <label for="block-notes" class="field-label">Ghi chú & tài liệu</label>
+            <label for="block-notes" class="field-label section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                <polyline points="14 2 14 8 20 8"></polyline>
+                <line x1="16" y1="13" x2="8" y2="13"></line>
+                <line x1="16" y1="17" x2="8" y2="17"></line>
+              </svg>
+              <span>Ghi chú &amp; tài liệu</span>
+            </label>
             <textarea
               id="block-notes"
               class="field-textarea"
@@ -812,6 +1066,76 @@
         <div class="modal-footer-right">
           <button type="button" id="btn-cloud-setup-cancel" class="btn btn-subtle btn-sm">Đóng</button>
           <button type="button" id="btn-cloud-config-save" class="btn btn-primary btn-sm">Lưu &amp; kết nối</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Modal 5: Theme Gallery Showcase Modal
+       ====================================================================== -->
+  <div id="theme-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="theme-modal-title">
+    <div class="modal-card modal-card--lg">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <h2 id="theme-modal-title" class="modal-title section-title-with-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <circle cx="13.5" cy="6.5" r="1" fill="currentColor"></circle>
+              <circle cx="17.5" cy="10.5" r="1" fill="currentColor"></circle>
+              <circle cx="8.5" cy="7.5" r="1" fill="currentColor"></circle>
+              <circle cx="6.5" cy="12.5" r="1" fill="currentColor"></circle>
+              <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10c.93 0 1.65-.75 1.65-1.69 0-.43-.18-.84-.44-1.13-.29-.29-.44-.65-.44-1.13a1.65 1.65 0 0 1 1.67-1.67h2c3.05 0 5.56-2.5 5.56-5.55C22 6.01 17.5 2 12 2z"></path>
+            </svg>
+            <span>Bộ sưu tập Giao diện</span>
+          </h2>
+        </div>
+        <button
+          type="button"
+          id="btn-close-theme-modal"
+          class="icon-btn icon-btn--sm"
+          aria-label="Đóng bộ sưu tập giao diện"
+          title="Đóng (Esc)"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body">
+        <p class="theme-modal-subtitle">
+          Chọn phong cách yêu thích — từ hoạt hình Doraemon, Anime đến các thiết kế nổi tiếng thế giới.
+        </p>
+        <div id="theme-grid" class="theme-grid" role="radiogroup" aria-label="Chọn giao diện"></div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="theme-fx-bar">
+          <div class="theme-fx-info">
+            <span class="theme-fx-title">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon>
+              </svg>
+              <span>Hiệu ứng nhấn nút (Sóng &amp; Âm thanh nhẹ)</span>
+            </span>
+            <p class="theme-fx-desc">Phản hồi xúc giác mượt mà khi thao tác trên lịch học.</p>
+          </div>
+          <button
+            type="button"
+            id="toggle-click-fx"
+            class="switch-toggle"
+            role="switch"
+            aria-checked="true"
+            aria-label="Bật hoặc tắt hiệu ứng nhấn nút"
+            title="Bật / tắt hiệu ứng nhấn nút"
+          >
+            <span class="switch-thumb"></span>
+          </button>
+        </div>
+
+        <div class="modal-footer-right">
+          <button type="button" id="btn-theme-done" class="btn btn-primary btn-sm">Xong</button>
         </div>
       </div>
     </div>

@@ -1,0 +1,1067 @@
+/* ==========================================================================
+   StudyPlan — Comprehensive 8-Theme Showcase, Ambient SVG Art & Theme Gallery
+   Themes:
+     1. light           — Notion Warm (Warm Off-White Classic Minimalism)
+     2. dark            — Linear Midnight (Deep Charcoal & Electric Indigo)
+     3. doraemon        — Doraemon Sky (22nd Century Sky Blue, Red Collar & Golden Bell)
+     4. anime-sakura    — Anime Sakura (Soft Spring Blossom & Lavender)
+     5. ghibli-meadow   — Thảo Nguyên Ghibli (Sunlit Countryside Paper & Meadow Green)
+     6. anime-cyber     — Đêm Sao Anime / Starlight Lofi (Twilight Comet & Neon Glow)
+     7. cupertino-glass — Cupertino Frost (Apple Silver-Frost & Translucent Blur)
+     8. nordic-aurora   — Nordic Fjord (Scandinavian Nord Slate & Frost Cyan)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   1. Theme 1: Notion Warm ([data-theme="light"])
+   -------------------------------------------------------------------------- */
+[data-theme="light"] {
+  color-scheme: light;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --bg-app: #ffffff;
+  --bg-canvas: #ffffff;
+  --bg-sidebar: #f7f6f3;
+  --bg-surface: #ffffff;
+  --bg-subtle: #f1f0ec;
+  --bg-hover: #eae9e4;
+  --bg-active: #e2e1db;
+  --bg-elevated: #ffffff;
+
+  --border-hairline: #e8e7e3;
+  --border-strong: #d5d3cd;
+  --border-grid: #ecebe7;
+  --border-grid-half: #f3f2ee;
+
+  --text-primary: #20201e;
+  --text-secondary: #5e5d59;
+  --text-muted: #8e8c86;
+  --text-inverse: #ffffff;
+
+  --accent: #2383e2;
+  --accent-hover: #1a6ec2;
+  --accent-soft: rgba(35, 131, 226, 0.1);
+  --accent-border: rgba(35, 131, 226, 0.3);
+  --now-line: #e03e3e;
+}
+
+/* --------------------------------------------------------------------------
+   2. Theme 2: Linear Midnight ([data-theme="dark"])
+   -------------------------------------------------------------------------- */
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    'Helvetica Neue', Arial, sans-serif;
+
+  --bg-app: #14151a;
+  --bg-canvas: #14151a;
+  --bg-sidebar: #191a21;
+  --bg-surface: #1e2029;
+  --bg-subtle: #232530;
+  --bg-hover: #2a2d3b;
+  --bg-active: #323646;
+  --bg-elevated: #1f212b;
+  --bg-overlay: rgba(8, 9, 14, 0.7);
+  --bg-toast: #242736;
+
+  --border-hairline: rgba(255, 255, 255, 0.08);
+  --border-strong: rgba(255, 255, 255, 0.15);
+  --border-grid: rgba(255, 255, 255, 0.055);
+  --border-grid-half: rgba(255, 255, 255, 0.03);
+
+  --text-primary: #f2f3f8;
+  --text-secondary: #9ca0b5;
+  --text-muted: #6e738a;
+  --text-inverse: #ffffff;
+  --text-toast: #f2f3f8;
+
+  --accent: #5e6ad2;
+  --accent-hover: #6f7ae0;
+  --accent-soft: rgba(94, 106, 210, 0.16);
+  --accent-border: rgba(94, 106, 210, 0.38);
+
+  --selection-bg: rgba(94, 106, 210, 0.18);
+  --selection-border: rgba(94, 106, 210, 0.62);
+  --focus-ring: 0 0 0 3px rgba(94, 106, 210, 0.3);
+  --now-line: #f25f5c;
+}
+
+[data-theme="dark"] .btn-primary {
+  background: linear-gradient(180deg, #6875df 0%, #5e6ad2 100%);
+  border-color: rgba(124, 136, 238, 0.45);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    0 2px 10px rgba(94, 106, 210, 0.32);
+}
+
+[data-theme="dark"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #7582e8 0%, #6875df 100%);
+  border-color: rgba(140, 151, 245, 0.55);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22),
+    0 4px 14px rgba(94, 106, 210, 0.42);
+}
+
+[data-theme="dark"] .brand-logo {
+  background: linear-gradient(135deg, #6875df 0%, #5e6ad2 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(94, 106, 210, 0.35);
+}
+
+/* --------------------------------------------------------------------------
+   3. Theme 3: Doraemon Sky ([data-theme="doraemon"])
+   -------------------------------------------------------------------------- */
+[data-theme="doraemon"] {
+  color-scheme: light;
+
+  --font-sans: 'Nunito', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+
+  --bg-app: #f4fbff;
+  --bg-canvas: #f8fdff;
+  --bg-sidebar: #e3f4fe;
+  --bg-surface: #ffffff;
+  --bg-subtle: #d6effd;
+  --bg-hover: #c5e8fc;
+  --bg-active: #b0defa;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(12, 45, 72, 0.42);
+  --bg-toast: #0c2d48;
+
+  --border-hairline: #bae2fa;
+  --border-strong: #7cc6f5;
+  --border-grid: #dff2fd;
+  --border-grid-half: #eaf6fe;
+
+  --text-primary: #0c2d48;
+  --text-secondary: #2e5a7d;
+  --text-muted: #5c88ab;
+  --text-inverse: #ffffff;
+  --text-toast: #f4fbff;
+
+  --accent: #0096e6;
+  --accent-hover: #007ec4;
+  --accent-soft: rgba(0, 150, 230, 0.13);
+  --accent-border: rgba(0, 150, 230, 0.34);
+
+  --streak-bg: #fff6c2;
+  --streak-text: #92400e;
+  --streak-border: #f5c400;
+
+  --now-line: #e60012;
+  --selection-bg: rgba(0, 150, 230, 0.13);
+  --selection-border: rgba(0, 150, 230, 0.56);
+  --focus-ring: 0 0 0 3px rgba(0, 150, 230, 0.25);
+
+  /* Bouncy Friendly Cartoon Radii */
+  --radius-xs: 6px;
+  --radius-sm: 9px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 20px;
+}
+
+/* Signature Doraemon Red Collar on Sidebar Top Bar + Golden Bell Glow */
+[data-theme="doraemon"] .sidebar-top {
+  position: relative;
+  border-bottom: 3px solid #e60012;
+  box-shadow: 0 3px 10px rgba(230, 0, 18, 0.1), 0 1px 6px rgba(245, 196, 0, 0.22);
+}
+
+[data-theme="doraemon"] .sidebar-top::after {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 28px;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #fff394 0%, #f5c400 65%, #d97706 100%);
+  border: 1.5px solid #b45309;
+  box-shadow: 0 0 8px rgba(245, 196, 0, 0.75);
+  pointer-events: none;
+}
+
+/* Golden Bell Styling on Brand Logo & Streak Pill */
+[data-theme="doraemon"] .brand-logo {
+  background: linear-gradient(145deg, #ffe359 0%, #f5c400 100%);
+  color: #78350f;
+  border: 1.5px solid #d97706;
+  box-shadow: 0 2px 7px rgba(245, 196, 0, 0.42);
+}
+
+[data-theme="doraemon"] .streak-pill {
+  background: linear-gradient(180deg, #fff099 0%, #f5c400 100%);
+  color: #78350f;
+  border: 1px solid #d98a00;
+  box-shadow: 0 2px 6px rgba(245, 196, 0, 0.32);
+  font-weight: 700;
+}
+
+/* Playful Tactile 3D Cartoon Buttons */
+[data-theme="doraemon"] .btn-primary {
+  background: linear-gradient(180deg, #12a8f5 0%, #0090df 100%);
+  border-color: #0077bd;
+  font-weight: 700;
+  box-shadow: 0 3px 0 #006aa8, 0 6px 14px rgba(0, 150, 230, 0.25);
+}
+
+[data-theme="doraemon"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #22b2fc 0%, #0098eb 100%);
+  border-color: #0077bd;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 0 #006aa8, 0 8px 16px rgba(0, 150, 230, 0.3);
+}
+
+[data-theme="doraemon"] .btn-primary:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #006aa8, 0 2px 5px rgba(0, 150, 230, 0.2);
+}
+
+/* --------------------------------------------------------------------------
+   4. Theme 4: Anime Sakura ([data-theme="anime-sakura"])
+   -------------------------------------------------------------------------- */
+[data-theme="anime-sakura"] {
+  color-scheme: light;
+
+  --font-sans: 'Nunito', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+
+  --bg-app: #fffafb;
+  --bg-canvas: #fffcfd;
+  --bg-sidebar: #fff0f5;
+  --bg-surface: #ffffff;
+  --bg-subtle: #ffe4ef;
+  --bg-hover: #ffd6e7;
+  --bg-active: #ffc2dc;
+  --bg-elevated: #ffffff;
+  --bg-overlay: rgba(59, 25, 41, 0.42);
+  --bg-toast: #3b1929;
+
+  --border-hairline: #fbcfe8;
+  --border-strong: #f9a8d4;
+  --border-grid: #fce7f3;
+  --border-grid-half: #fdf2f8;
+
+  --text-primary: #3b1929;
+  --text-secondary: #7a425b;
+  --text-muted: #a86c87;
+  --text-inverse: #ffffff;
+  --text-toast: #fff5f9;
+
+  --accent: #ec4899;
+  --accent-hover: #db2777;
+  --accent-soft: rgba(236, 72, 153, 0.12);
+  --accent-border: rgba(236, 72, 153, 0.32);
+
+  --now-line: #e11d48;
+  --selection-bg: rgba(236, 72, 153, 0.12);
+  --selection-border: rgba(236, 72, 153, 0.5);
+  --focus-ring: 0 0 0 3px rgba(236, 72, 153, 0.24);
+
+  --radius-xs: 6px;
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 15px;
+  --radius-xl: 18px;
+}
+
+[data-theme="anime-sakura"] .brand-logo {
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 60%, #a855f7 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 8px rgba(236, 72, 153, 0.32);
+}
+
+[data-theme="anime-sakura"] .btn-primary {
+  background: linear-gradient(135deg, #f472b6 0%, #ec4899 55%, #a855f7 100%);
+  border-color: #db2777;
+  font-weight: 700;
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.28);
+}
+
+[data-theme="anime-sakura"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #f682be 0%, #f052a1 55%, #b366f9 100%);
+  border-color: #be185d;
+  box-shadow: 0 6px 18px rgba(236, 72, 153, 0.38);
+}
+
+/* --------------------------------------------------------------------------
+   5. Theme 5: Thảo Nguyên Ghibli ([data-theme="ghibli-meadow"])
+   -------------------------------------------------------------------------- */
+[data-theme="ghibli-meadow"] {
+  color-scheme: light;
+
+  --font-sans: 'Nunito', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+
+  --bg-app: #fbfaf3;
+  --bg-canvas: #fcfbf5;
+  --bg-sidebar: #eff4ea;
+  --bg-surface: #ffffff;
+  --bg-subtle: #e4ede0;
+  --bg-hover: #d8e5d2;
+  --bg-active: #c8dac0;
+  --bg-elevated: #fffef9;
+  --bg-overlay: rgba(35, 49, 35, 0.44);
+  --bg-toast: #233123;
+
+  --border-hairline: #d4e0ce;
+  --border-strong: #b5c9ab;
+  --border-grid: #e5ede0;
+  --border-grid-half: #eef3ea;
+
+  --text-primary: #233123;
+  --text-secondary: #4e634e;
+  --text-muted: #768c75;
+  --text-inverse: #ffffff;
+  --text-toast: #fbfaf3;
+
+  --accent: #2f7d57;
+  --accent-hover: #246345;
+  --accent-soft: rgba(47, 125, 87, 0.12);
+  --accent-border: rgba(47, 125, 87, 0.3);
+
+  --success: #2f7d57;
+  --streak-bg: rgba(217, 119, 6, 0.14);
+  --streak-text: #9a5206;
+  --streak-border: rgba(217, 119, 6, 0.28);
+
+  --now-line: #d9534f;
+  --selection-bg: rgba(47, 125, 87, 0.12);
+  --selection-border: rgba(47, 125, 87, 0.48);
+  --focus-ring: 0 0 0 3px rgba(47, 125, 87, 0.22);
+
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+}
+
+[data-theme="ghibli-meadow"] .brand-logo {
+  background: linear-gradient(135deg, #3b9468 0%, #2b724f 100%);
+  color: #fffef9;
+  box-shadow: 0 2px 7px rgba(47, 125, 87, 0.28);
+}
+
+[data-theme="ghibli-meadow"] .btn-primary {
+  background: linear-gradient(135deg, #3b9468 0%, #2b724f 100%);
+  border-color: #246345;
+  font-weight: 600;
+  box-shadow: 0 3px 10px rgba(47, 125, 87, 0.24);
+}
+
+[data-theme="ghibli-meadow"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #43a374 0%, #2f7d57 100%);
+  border-color: #1f563c;
+  box-shadow: 0 5px 14px rgba(47, 125, 87, 0.32);
+}
+
+/* --------------------------------------------------------------------------
+   6. Theme 6: Đêm Sao Anime — Starlight Lofi ([data-theme="anime-cyber"])
+   -------------------------------------------------------------------------- */
+[data-theme="anime-cyber"] {
+  color-scheme: dark;
+
+  --font-sans: 'Nunito', 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, sans-serif;
+
+  --bg-app: #121328;
+  --bg-canvas: #14162e;
+  --bg-sidebar: #181a36;
+  --bg-surface: #1f2244;
+  --bg-elevated: #23264d;
+  --bg-subtle: #252952;
+  --bg-hover: #2d3263;
+  --bg-active: #373d78;
+  --bg-overlay: rgba(8, 9, 22, 0.72);
+  --bg-toast: #262a54;
+
+  --border-hairline: #2e3366;
+  --border-strong: #434a8a;
+  --border-grid: rgba(139, 92, 246, 0.13);
+  --border-grid-half: rgba(139, 92, 246, 0.07);
+
+  --text-primary: #f1f0ff;
+  --text-secondary: #b4b2dc;
+  --text-muted: #7e7ca8;
+  --text-inverse: #ffffff;
+  --text-toast: #f1f0ff;
+
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-soft: rgba(139, 92, 246, 0.18);
+  --accent-border: rgba(139, 92, 246, 0.42);
+
+  --now-line: #38bdf8;
+  --selection-bg: rgba(139, 92, 246, 0.2);
+  --selection-border: rgba(56, 189, 248, 0.65);
+  --focus-ring: 0 0 0 3px rgba(139, 92, 246, 0.34);
+
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 15px;
+  --radius-xl: 18px;
+}
+
+[data-theme="anime-cyber"] .brand-logo {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  color: #ffffff;
+  box-shadow: 0 2px 12px rgba(139, 92, 246, 0.48);
+}
+
+[data-theme="anime-cyber"] .btn-primary {
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 50%, #ec4899 100%);
+  border-color: rgba(196, 181, 253, 0.42);
+  font-weight: 700;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.4);
+}
+
+[data-theme="anime-cyber"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #7275f5 0%, #996df8 50%, #f15aa6 100%);
+  border-color: rgba(221, 214, 254, 0.58);
+  box-shadow: 0 6px 22px rgba(139, 92, 246, 0.52);
+}
+
+[data-theme="anime-cyber"] .current-time-dot,
+[data-theme="anime-cyber"] .current-time-line {
+  box-shadow: 0 0 8px rgba(56, 189, 248, 0.65);
+}
+
+/* --------------------------------------------------------------------------
+   7. Theme 7: Cupertino Frost ([data-theme="cupertino-glass"])
+   -------------------------------------------------------------------------- */
+[data-theme="cupertino-glass"] {
+  color-scheme: light;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Inter',
+    'Segoe UI', Roboto, sans-serif;
+
+  --bg-app: #f2f4f8;
+  --bg-canvas: #f7f9fc;
+  --bg-sidebar: rgba(240, 243, 249, 0.88);
+  --bg-surface: rgba(255, 255, 255, 0.88);
+  --bg-elevated: rgba(255, 255, 255, 0.92);
+  --bg-subtle: #e8ecf3;
+  --bg-hover: #dde3ee;
+  --bg-active: #cfd7e6;
+  --bg-overlay: rgba(15, 23, 42, 0.36);
+  --bg-toast: rgba(15, 23, 42, 0.92);
+
+  --border-hairline: rgba(15, 23, 42, 0.08);
+  --border-strong: rgba(15, 23, 42, 0.16);
+  --border-grid: rgba(15, 23, 42, 0.06);
+  --border-grid-half: rgba(15, 23, 42, 0.035);
+
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  --text-muted: #78879b;
+  --text-inverse: #ffffff;
+  --text-toast: #f8fafc;
+
+  --accent: #007aff;
+  --accent-hover: #0062cc;
+  --accent-soft: rgba(0, 122, 255, 0.11);
+  --accent-border: rgba(0, 122, 255, 0.28);
+
+  --now-line: #ff3b30;
+  --selection-bg: rgba(0, 122, 255, 0.12);
+  --selection-border: rgba(0, 122, 255, 0.5);
+  --focus-ring: 0 0 0 3px rgba(0, 122, 255, 0.24);
+
+  --radius-sm: 8px;
+  --radius-md: 11px;
+  --radius-lg: 15px;
+  --radius-xl: 18px;
+}
+
+[data-theme="cupertino-glass"] .workspace-header {
+  background-color: rgba(247, 249, 252, 0.8);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+  box-shadow: inset 0 -1px 0 rgba(15, 23, 42, 0.06);
+}
+
+[data-theme="cupertino-glass"] .sidebar,
+[data-theme="cupertino-glass"] .sidebar-footer,
+[data-theme="cupertino-glass"] .focus-timer-bar {
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  backdrop-filter: blur(14px) saturate(160%);
+}
+
+[data-theme="cupertino-glass"] .modal-card {
+  -webkit-backdrop-filter: blur(14px) saturate(170%);
+  backdrop-filter: blur(14px) saturate(170%);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), var(--shadow-lg);
+}
+
+[data-theme="cupertino-glass"] .stat-card,
+[data-theme="cupertino-glass"] .weekly-repeat-card,
+[data-theme="cupertino-glass"] .empty-state-card,
+[data-theme="cupertino-glass"] .btn-subtle {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65), var(--shadow-xs);
+}
+
+[data-theme="cupertino-glass"] .brand-logo {
+  background: linear-gradient(180deg, #218bff 0%, #007aff 100%);
+  color: #ffffff;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.45),
+    0 2px 7px rgba(0, 122, 255, 0.3);
+}
+
+[data-theme="cupertino-glass"] .btn-primary {
+  background: linear-gradient(180deg, #1f8aff 0%, #007aff 100%);
+  border-color: #006be0;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.65),
+    0 2px 8px rgba(0, 122, 255, 0.25);
+}
+
+[data-theme="cupertino-glass"] .btn-primary:hover:not(:disabled) {
+  background: linear-gradient(180deg, #0f7cf5 0%, #0066d6 100%);
+  border-color: #005bbf;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.55),
+    0 4px 12px rgba(0, 122, 255, 0.32);
+}
+
+/* --------------------------------------------------------------------------
+   8. Theme 8: Nordic Fjord ([data-theme="nordic-aurora"])
+   -------------------------------------------------------------------------- */
+[data-theme="nordic-aurora"] {
+  color-scheme: dark;
+
+  --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+    sans-serif;
+
+  --bg-app: #2e3440;
+  --bg-canvas: #2e3440;
+  --bg-sidebar: #272c36;
+  --bg-surface: #3b4252;
+  --bg-elevated: #3b4252;
+  --bg-subtle: #434c5e;
+  --bg-hover: #4c566a;
+  --bg-active: #566178;
+  --bg-overlay: rgba(24, 28, 36, 0.68);
+  --bg-toast: #3b4252;
+
+  --border-hairline: #3e4656;
+  --border-strong: #4c566a;
+  --border-grid: #373e4d;
+  --border-grid-half: #323947;
+
+  --text-primary: #eceff4;
+  --text-secondary: #d8dee9;
+  --text-muted: #9aa5b8;
+  --text-inverse: #2e3440;
+  --text-toast: #eceff4;
+
+  --accent: #88c0d0;
+  --accent-hover: #81a1c1;
+  --accent-soft: rgba(136, 192, 208, 0.16);
+  --accent-border: rgba(136, 192, 208, 0.38);
+
+  --success: #a3be8c;
+  --success-soft: rgba(163, 190, 140, 0.16);
+  --success-border: rgba(163, 190, 140, 0.34);
+
+  --warning: #ebcb8b;
+  --danger: #bf616a;
+  --danger-hover: #d06f79;
+
+  --now-line: #bf616a;
+  --selection-bg: rgba(136, 192, 208, 0.17);
+  --selection-border: rgba(136, 192, 208, 0.58);
+  --focus-ring: 0 0 0 3px rgba(136, 192, 208, 0.3);
+}
+
+[data-theme="nordic-aurora"] .brand-logo {
+  background: linear-gradient(135deg, #8fbcbb 0%, #88c0d0 55%, #81a1c1 100%);
+  color: #2e3440;
+}
+
+[data-theme="nordic-aurora"] .btn-primary {
+  font-weight: 600;
+  color: #242933;
+}
+
+[data-theme="nordic-aurora"] .btn-primary .btn-ripple-wave {
+  background-color: rgba(46, 52, 64, 0.35);
+}
+
+[data-theme="nordic-aurora"] .btn-danger,
+[data-theme="nordic-aurora"] .btn-danger-subtle:hover:not(:disabled) {
+  color: #eceff4;
+}
+
+/* ==========================================================================
+   Ambient Corner SVG Artwork (#theme-ambient-decor)
+   Strictly non-interactive (pointer-events: none), subtle opacity for 10/10 readability
+   ========================================================================== */
+.theme-ambient-decor {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  user-select: none;
+  z-index: 1;
+  overflow: hidden;
+  opacity: 0.55;
+}
+
+.decor-svg {
+  display: none;
+  position: absolute;
+  pointer-events: none;
+}
+
+/* 1. Doraemon Sky Watermark (Bottom-right 4D pocket, clouds & golden bell) */
+[data-theme="doraemon"] .decor-doraemon {
+  display: block;
+  right: 16px;
+  bottom: 14px;
+  width: 280px;
+  height: 220px;
+  animation: ambientFloatSlow 9s ease-in-out infinite;
+}
+
+/* 2. Anime Sakura Watermark (Top-right & bottom-right drifting blossoms) */
+[data-theme="anime-sakura"] .decor-sakura {
+  display: block;
+  right: 10px;
+  bottom: 10px;
+  width: 300px;
+  height: 260px;
+  animation: ambientFloatSlow 11s ease-in-out infinite;
+}
+
+/* 3. Ghibli Meadow Watermark (Bottom-right soot sprites & meadow breeze) */
+[data-theme="ghibli-meadow"] .decor-ghibli {
+  display: block;
+  right: 16px;
+  bottom: 12px;
+  width: 290px;
+  height: 220px;
+  animation: ambientFloatSlow 10s ease-in-out infinite;
+}
+
+/* 4. Starlight Lofi Watermark (Top-right / bottom-right comet arc & twinkling stars) */
+[data-theme="anime-cyber"] .decor-starlight {
+  display: block;
+  right: 12px;
+  top: 70px;
+  width: 320px;
+  height: 250px;
+  opacity: 0.85;
+  animation: ambientTwinkle 7s ease-in-out infinite;
+}
+
+/* 5. Nordic Aurora Watermark (Top-right / bottom-right aurora borealis ribbon) */
+[data-theme="nordic-aurora"] .decor-nordic {
+  display: block;
+  right: 0;
+  bottom: 0;
+  width: 360px;
+  height: 240px;
+  opacity: 0.72;
+  animation: ambientFloatSlow 12s ease-in-out infinite;
+}
+
+@keyframes ambientFloatSlow {
+  0%,
+  100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes ambientTwinkle {
+  0%,
+  100% {
+    opacity: 0.75;
+    transform: translateY(0px);
+  }
+  50% {
+    opacity: 0.98;
+    transform: translateY(-4px);
+  }
+}
+
+@media (max-width: 640px) {
+  .theme-ambient-decor {
+    opacity: 0.36;
+  }
+
+  .decor-svg {
+    transform-origin: bottom right;
+    scale: 0.76;
+  }
+}
+
+/* ==========================================================================
+   Header & Sidebar Theme Gallery Trigger Buttons
+   ========================================================================== */
+.btn-theme-trigger {
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-full);
+  background-color: var(--bg-surface);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-primary);
+  font-size: 12.5px;
+  font-weight: 600;
+  box-shadow: var(--shadow-xs);
+  gap: 6px;
+}
+
+.btn-theme-trigger svg {
+  color: var(--accent);
+  flex-shrink: 0;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.btn-theme-trigger:hover:not(:disabled) {
+  background-color: var(--bg-hover);
+  border-color: var(--accent-border);
+  box-shadow: var(--shadow-sm);
+}
+
+.btn-theme-trigger:hover:not(:disabled) svg {
+  transform: rotate(-14deg) scale(1.08);
+}
+
+#btn-sidebar-theme svg {
+  color: var(--accent);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+#btn-sidebar-theme:hover svg {
+  transform: rotate(-12deg) scale(1.08);
+}
+
+@media (max-width: 720px) {
+  .btn-theme-trigger #current-theme-label {
+    max-width: 96px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 440px) {
+  .btn-theme-trigger {
+    padding: 0 9px;
+  }
+
+  .btn-theme-trigger #current-theme-label {
+    display: none;
+  }
+}
+
+/* ==========================================================================
+   Theme Gallery Modal (#theme-modal, .theme-grid, .theme-card, .theme-preview)
+   ========================================================================== */
+.modal-card--lg {
+  max-width: 680px;
+}
+
+.theme-modal-subtitle {
+  margin: -4px 0 2px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-secondary);
+}
+
+.theme-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+@media (max-width: 540px) {
+  .theme-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.theme-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  padding: 11px;
+  border-radius: var(--radius-lg);
+  background-color: var(--bg-surface);
+  border: 1.5px solid var(--border-hairline);
+  color: var(--text-primary);
+  text-align: left;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 180ms cubic-bezier(0.22, 1, 0.36, 1),
+    border-color var(--transition-fast),
+    box-shadow var(--transition-fast),
+    background-color var(--transition-fast);
+}
+
+.theme-card:hover {
+  transform: translateY(-2px);
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.theme-card:active {
+  transform: translateY(0px) scale(0.985);
+}
+
+.theme-card.is-active,
+.theme-card.active,
+.theme-card[aria-checked="true"] {
+  border-color: var(--accent);
+  background-color: var(--accent-soft);
+  box-shadow: 0 0 0 2px var(--accent-border), var(--shadow-sm);
+}
+
+/* Automatic Checkmark Badge when active (if no custom check badge element is rendered) */
+.theme-card.is-active:not(:has(.theme-check, .theme-card-check, .theme-active-badge))::after,
+.theme-card[aria-checked="true"]:not(:has(.theme-check, .theme-card-check, .theme-active-badge))::after {
+  content: '✓';
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background-color: var(--accent);
+  color: var(--text-inverse);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  pointer-events: none;
+}
+
+/* Explicit Checkmark Badge Element (when rendered by JS) */
+.theme-check,
+.theme-card-check,
+.theme-active-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+  background-color: var(--accent);
+  color: var(--text-inverse);
+  font-size: 12px;
+  font-weight: 700;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  opacity: 0;
+  transform: scale(0.75);
+  transition: opacity var(--transition-fast), transform var(--transition-fast);
+  pointer-events: none;
+  z-index: 2;
+}
+
+.theme-card.is-active .theme-check,
+.theme-card.is-active .theme-card-check,
+.theme-card.is-active .theme-active-badge,
+.theme-card.active .theme-check,
+.theme-card[aria-checked="true"] .theme-check,
+.theme-card[aria-checked="true"] .theme-card-check,
+.theme-card[aria-checked="true"] .theme-active-badge {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Mini Window Mockup (.theme-preview) */
+.theme-preview {
+  position: relative;
+  display: flex;
+  align-items: stretch;
+  width: 100%;
+  height: 68px;
+  border-radius: var(--radius-md);
+  overflow: hidden;
+  border: 1px solid rgba(127, 127, 127, 0.2);
+  background-color: var(--preview-canvas, var(--bg-canvas));
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.theme-preview-sidebar,
+.preview-sidebar {
+  width: 30%;
+  flex-shrink: 0;
+  padding: 8px 7px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  background-color: var(--preview-sidebar, var(--bg-sidebar));
+  border-right: 1px solid rgba(127, 127, 127, 0.16);
+}
+
+.theme-preview-dots,
+.preview-dots {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+}
+
+.theme-preview-dots span,
+.preview-dots span {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background-color: currentColor;
+  opacity: 0.45;
+}
+
+.theme-preview-line,
+.preview-line {
+  height: 4px;
+  border-radius: 999px;
+  width: 78%;
+  background-color: rgba(127, 127, 127, 0.24);
+}
+
+.theme-preview-canvas,
+.theme-preview-main,
+.theme-preview-body,
+.preview-canvas {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 10px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 6px;
+  background-color: var(--preview-canvas, transparent);
+}
+
+.theme-preview-accent,
+.theme-preview-bar,
+.preview-accent {
+  height: 8px;
+  width: 58%;
+  border-radius: 999px;
+  background: var(--preview-accent, var(--accent));
+}
+
+.theme-preview-pill,
+.theme-preview-block,
+.preview-pill {
+  height: 15px;
+  width: 84%;
+  border-radius: 5px;
+  background-color: var(--preview-pill, rgba(127, 127, 127, 0.16));
+  border-left: 3px solid var(--preview-accent, var(--accent));
+}
+
+/* Theme Card Meta Info */
+.theme-card-body,
+.theme-card-info,
+.theme-info,
+.theme-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.theme-card-head,
+.theme-card-title-row,
+.theme-header-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+
+.theme-card-name,
+.theme-name,
+.theme-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--text-primary);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.theme-card-badge,
+.theme-card-tag,
+.theme-tag,
+.theme-badge {
+  display: inline-flex;
+  align-items: center;
+  height: 19px;
+  padding: 0 7px;
+  border-radius: 999px;
+  background-color: var(--bg-subtle);
+  border: 1px solid var(--border-hairline);
+  color: var(--text-secondary);
+  font-size: 10.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.theme-card-desc,
+.theme-desc {
+  margin: 0;
+  font-size: 11.5px;
+  line-height: 1.42;
+  color: var(--text-secondary);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* Footer Click FX Bar inside #theme-modal */
+.theme-fx-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex: 1;
+  min-width: 0;
+}
+
+.theme-fx-info {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.theme-fx-title {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.theme-fx-title svg {
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
+.theme-fx-desc {
+  margin: 0;
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+[data-click-fx="false"] .btn-ripple-wave {
+  display: none !important;
+}

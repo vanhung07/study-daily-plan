@@ -26,7 +26,9 @@
     }
 
     sp.Store.init();
-    document.documentElement.setAttribute('data-theme', sp.Store.getTheme() === 'dark' ? 'dark' : 'light');
+    var th = sp.Store.getTheme();
+    document.documentElement.setAttribute('data-theme', th);
+    document.documentElement.setAttribute('data-color-scheme', sp.Utils.isDarkTheme(th) ? 'dark' : 'light');
     sp.Timer.init();
     sp.UI.init();
     if (sp.Sync && typeof sp.Sync.init === 'function') {

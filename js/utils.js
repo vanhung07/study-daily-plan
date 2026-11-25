@@ -21,6 +21,93 @@
   /** Allowed subject / block color tokens. */
   const COLORS = Object.freeze(['blue', 'purple', 'emerald', 'amber', 'rose', 'cyan', 'orange', 'slate']);
 
+  /**
+   * @typedef {Object} ThemeDescriptor
+   * @property {string} id
+   * @property {string} name
+   * @property {string} badge
+   * @property {'world'|'cartoon'} category
+   * @property {'light'|'dark'} scheme
+   * @property {string} desc
+   * @property {readonly string[]} preview
+   */
+
+  /** Curated collection of 8 UI themes. */
+  const THEMES = Object.freeze([
+    Object.freeze({
+      id: 'light',
+      name: 'Notion Warm',
+      badge: '📄 Cổ điển',
+      category: 'world',
+      scheme: 'light',
+      desc: 'Tối giản ấm áp kiểu Notion, dịu mắt cả ngày',
+      preview: Object.freeze(['#ffffff', '#f7f6f3', '#2383e2', '#0f7b6c'])
+    }),
+    Object.freeze({
+      id: 'dark',
+      name: 'Linear Midnight',
+      badge: '⚡ Hiện đại',
+      category: 'world',
+      scheme: 'dark',
+      desc: 'Đêm than chì sắc nét kiểu Linear, tập trung sâu',
+      preview: Object.freeze(['#14151a', '#191a21', '#5e6ad2', '#38bdf8'])
+    }),
+    Object.freeze({
+      id: 'doraemon',
+      name: 'Doraemon Sky',
+      badge: '🔔 Hoạt hình',
+      category: 'cartoon',
+      scheme: 'light',
+      desc: 'Xanh bầu trời Mèo Ú, viền cổ đỏ & chuông vàng tươi vui',
+      preview: Object.freeze(['#f8fdff', '#e3f4fe', '#0096e6', '#f5c400'])
+    }),
+    Object.freeze({
+      id: 'anime-sakura',
+      name: 'Anime Sakura',
+      badge: '🌸 Anime',
+      category: 'cartoon',
+      scheme: 'light',
+      desc: 'Sắc hồng hoa anh đào mùa xuân Nhật Bản ngọt ngào',
+      preview: Object.freeze(['#fffcfd', '#fff0f5', '#ec4899', '#a855f7'])
+    }),
+    Object.freeze({
+      id: 'ghibli-meadow',
+      name: 'Thảo Nguyên Ghibli',
+      badge: '🌿 Anime',
+      category: 'cartoon',
+      scheme: 'light',
+      desc: 'Nắng sớm đồng cỏ & rừng xanh yên bình kiểu Ghibli',
+      preview: Object.freeze(['#fcfbf5', '#eff4ea', '#2f7d57', '#d9730d'])
+    }),
+    Object.freeze({
+      id: 'anime-cyber',
+      name: 'Đêm Sao Anime',
+      badge: '🌠 Lofi Night',
+      category: 'cartoon',
+      scheme: 'dark',
+      desc: 'Bầu trời sao chổi tím lam huyền ảo cảm hứng Your Name',
+      preview: Object.freeze(['#14162e', '#181a36', '#8b5cf6', '#38bdf8'])
+    }),
+    Object.freeze({
+      id: 'cupertino-glass',
+      name: 'Cupertino Frost',
+      badge: '💎 Thế giới',
+      category: 'world',
+      scheme: 'light',
+      desc: 'Kính mờ trong trẻo tinh tế lấy cảm hứng từ macOS',
+      preview: Object.freeze(['#f7f9fc', '#eef2f8', '#007aff', '#34c759'])
+    }),
+    Object.freeze({
+      id: 'nordic-aurora',
+      name: 'Nordic Fjord',
+      badge: '❄️ Bắc Âu',
+      category: 'world',
+      scheme: 'dark',
+      desc: 'Bảng màu Nord Bắc Âu xanh băng cực êm mắt khi học khuya',
+      preview: Object.freeze(['#2e3440', '#272c36', '#88c0d0', '#a3be8c'])
+    })
+  ]);
+
   const WEEKDAYS_VI = Object.freeze(['Chủ Nhật', 'Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy']);
   const DATE_KEY_RE = /^(\d{4})-(\d{2})-(\d{2})$/;
 
@@ -305,6 +392,38 @@
     return typeof color === 'string' && COLORS.indexOf(color) !== -1;
   }
 
+  /**
+   * Check whether a value matches one of the 8 supported theme IDs.
+   * @param {unknown} theme
+   * @returns {boolean}
+   */
+  function isValidTheme(theme) {
+    return typeof theme === 'string' && THEMES.some(function (t) { return t.id === theme; });
+  }
+
+  /**
+   * Return true when the theme uses a dark color scheme.
+   * @param {unknown} theme
+   * @returns {boolean}
+   */
+  function isDarkTheme(theme) {
+    return theme === 'dark' || theme === 'anime-cyber' || theme === 'nordic-aurora';
+  }
+
+  /**
+   * Retrieve the descriptor for a theme ID, falling back to 'light'.
+   * @param {unknown} theme
+   * @returns {ThemeDescriptor}
+   */
+  function getThemeMeta(theme) {
+    if (typeof theme === 'string') {
+      for (let i = 0; i < THEMES.length; i++) {
+        if (THEMES[i].id === theme) return THEMES[i];
+      }
+    }
+    return THEMES[0];
+  }
+
   StudyPlan.Utils = Object.freeze({
     START_MIN: START_MIN,
     END_MIN: END_MIN,
@@ -312,6 +431,7 @@
     MIN_DURATION: MIN_DURATION,
     HOUR_HEIGHT: HOUR_HEIGHT,
     COLORS: COLORS,
+    THEMES: THEMES,
     WEEKDAYS_VI: WEEKDAYS_VI,
     uid: uid,
     clamp: clamp,
@@ -335,6 +455,9 @@
     escapeHtml: escapeHtml,
     deepClone: deepClone,
     debounce: debounce,
-    isValidColor: isValidColor
+    isValidColor: isValidColor,
+    isValidTheme: isValidTheme,
+    isDarkTheme: isDarkTheme,
+    getThemeMeta: getThemeMeta
   });
 })(window);

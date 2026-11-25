@@ -11,7 +11,8 @@
 - **Tổng quan trong ngày:** mục tiêu quan trọng nhất, phần trăm hoàn thành, thời gian đã lên lịch / thực học và chuỗi ngày học liên tiếp.
 - **Lịch nhỏ:** xem nhanh những ngày đã có kế hoạch.
 - **Lặp lại hàng tuần:** bật công tắc **Lặp lại tuần** trên thanh bên để toàn bộ lịch học của tuần này tự động lặp sang các tuần tiếp theo (hoặc chọn lặp riêng từng khung giờ theo các thứ `T2 – CN`, kèm nút chép nhanh lịch tuần trước).
-- **Tiện ích:** chép lịch từ hôm qua / tuần trước, chuyển khung giờ sang ngày mai, hoàn tác khi xoá hoặc dời, giao diện Sáng/Tối, dùng tốt trên điện thoại.
+- **Bộ sưu tập 8 Giao diện & Hiệu ứng tương tác:** đổi nhanh phong cách học tập yêu thích (**Doraemon Sky**, **Anime Sakura**, **Thảo Nguyên Ghibli**, **Đêm Sao Anime**, **Notion Warm**, **Linear Midnight**, **Cupertino Frost**, **Nordic Fjord**) cùng hiệu ứng gợn sóng & âm thanh nút bấm êm tai.
+- **Tiện ích:** chép lịch từ hôm qua / tuần trước, chuyển khung giờ sang ngày mai, hoàn tác khi xoá hoặc dời, chuyển đổi thông minh Sáng/Tối, dùng tốt trên điện thoại.
 
 ## Cách chạy
 
@@ -31,19 +32,27 @@ Sau đó mở <http://localhost:8000>.
 daily-plan/
 ├── index.html          # Khung giao diện (HTML)
 ├── css/
-│   ├── tokens.css      # Biến thiết kế: màu, khoảng cách (Sáng/Tối)
-│   └── styles.css      # Kiểu dáng các thành phần
+│   ├── tokens.css      # Biến thiết kế: bảng màu 8 giao diện, khoảng cách
+│   └── styles.css      # Kiểu dáng thành phần & hiệu ứng tương tác
 ├── js/
-│   ├── utils.js            # Hàm tiện ích: ngày giờ, định dạng, escape HTML
+│   ├── utils.js            # Hàm tiện ích: ngày giờ, định dạng, danh mục 8 giao diện
 │   ├── store.js            # Dữ liệu, lưu localStorage, thống kê, nhập/xuất JSON
 │   ├── timer.js            # Bộ đếm tập trung dựa trên mốc thời gian
 │   ├── timeline.js         # Lưới giờ, bố cục khung trùng nhau, kéo thả
 │   ├── firebase-config.js  # Cấu hình Firebase cho đồng bộ đám mây
 │   ├── sync.js             # Đồng bộ thời gian thực qua Firebase Auth + Firestore
-│   ├── ui.js               # Thanh bên, hộp thoại, thông báo, phím tắt
+│   ├── ui.js               # Thanh bên, hộp thoại, bộ chọn giao diện, hiệu ứng nút bấm
 │   └── app.js              # Khởi động ứng dụng
 └── README.md
 ```
+
+## Bộ sưu tập 8 Giao diện & Hiệu ứng tương tác
+
+Nhấn nút **Giao diện** trên thanh công cụ hoặc thanh bên để mở bộ sưu tập 8 chủ đề được tinh chỉnh sẵn cho góc học tập:
+
+- **Hoạt hình & Anime:** **Doraemon Sky** (xanh bầu trời Mèo Ú, viền đỏ & chuông vàng), **Anime Sakura** (hồng hoa anh đào), **Thảo Nguyên Ghibli** (xanh đồng cỏ nắng sớm), **Đêm Sao Anime** (tím lam bầu trời sao Lofi).
+- **Phong cách Thế giới:** **Notion Warm** (tối giản ấm áp), **Linear Midnight** (than chì sắc nét), **Cupertino Frost** (kính mờ tinh tế), **Nordic Fjord** (xanh băng Bắc Âu dịu mắt khi học khuya).
+- **Chuyển đổi Sáng/Tối thông minh & Hiệu ứng nút bấm:** nút mặt trời/mặt trăng ghi nhớ giao diện Sáng và Tối bạn vừa chọn để đổi qua lại tức thì; kèm hiệu ứng gợn sóng (ripple) và âm phản hồi nhẹ nhàng có thể bật/tắt tùy ý.
 
 ## Đồng bộ đám mây giữa điện thoại & máy tính (Firebase)
 

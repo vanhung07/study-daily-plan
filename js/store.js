@@ -18,7 +18,7 @@
   /**
    * @typedef {'blue'|'purple'|'emerald'|'amber'|'rose'|'cyan'|'orange'|'slate'} ColorToken
    * @typedef {'low'|'medium'|'high'} Priority
-   * @typedef {'light'|'dark'} Theme
+   * @typedef {'light'|'dark'|'doraemon'|'anime-sakura'|'ghibli-meadow'|'anime-cyber'|'cupertino-glass'|'nordic-aurora'} Theme
    *
    * @typedef {Object} Subject
    * @property {string} id
@@ -66,6 +66,7 @@
    * @typedef {Object} AppState
    * @property {1} version
    * @property {Theme} theme
+   * @property {boolean} clickFx Tactile button ripple and subtle pop sound effects
    * @property {boolean} weeklyRepeat Automatically repeat weekly schedule into future weeks
    * @property {Subject[]} subjects
    * @property {RecurringRule[]} recurringRules
@@ -126,7 +127,8 @@
   function createEmptyState(theme) {
     return {
       version: STATE_VERSION,
-      theme: theme === 'dark' ? 'dark' : 'light',
+      theme: /** @type {Theme} */ (Utils.isValidTheme(theme) ? theme : 'light'),
+      clickFx: true,
       weeklyRepeat: false,
       subjects: [],
       recurringRules: [],
@@ -328,7 +330,10 @@
    */
   function sanitizeState(raw, fallbackTheme) {
     const src = isPlainObject(raw) ? raw : {};
-    const result = createEmptyState(src.theme === 'dark' || src.theme === 'light' ? src.theme : fallbackTheme);
+    const validFallback = /** @type {Theme} */ (Utils.isValidTheme(fallbackTheme) ? fallbackTheme : 'light');
+    const resolvedTheme = /** @type {Theme} */ (Utils.isValidTheme(src.theme) ? src.theme : validFallback);
+    const result = createEmptyState(resolvedTheme);
+    result.clickFx = src.clickFx !== false;
     result.weeklyRepeat = src.weeklyRepeat === true;
     const ids = new Set();
     if (Array.isArray(src.subjects)) {
@@ -820,10 +825,29 @@
    * @returns {Theme}
    */
   function setTheme(theme) {
-    const next = theme === 'dark' ? 'dark' : 'light';
+    const next = /** @type {Theme} */ (Utils.isValidTheme(theme) ? theme : 'light');
     if (state.theme !== next) {
       state.theme = next;
       commit('theme');
+    }
+    return next;
+  }
+
+  /** @returns {boolean} */
+  function getClickFx() {
+    return state.clickFx !== false;
+  }
+
+  /**
+   * Enable or disable tactile button click effects (ripple & pop sound).
+   * @param {boolean} enabled
+   * @returns {boolean}
+   */
+  function setClickFx(enabled) {
+    const next = Boolean(enabled);
+    if (state.clickFx !== next) {
+      state.clickFx = next;
+      commit('click-fx');
     }
     return next;
   }
@@ -1347,6 +1371,10 @@
    */
   function mergeIncomingStateIntoCurrent(incoming) {
     if (incoming.weeklyRepeat) state.weeklyRepeat = true;
+    if (incoming.clickFx === false) state.clickFx = false;
+    if (state.theme === 'light' && Utils.isValidTheme(incoming.theme) && incoming.theme !== 'light') {
+      state.theme = incoming.theme;
+    }
 
     /** @type {Record<string, string>} */
     const subjectIdMap = {};
@@ -1457,6 +1485,8 @@
     getState: getState,
     getTheme: getTheme,
     setTheme: setTheme,
+    getClickFx: getClickFx,
+    setClickFx: setClickFx,
     getWeeklyRepeat: getWeeklyRepeat,
     setWeeklyRepeat: setWeeklyRepeat,
     getRecurringRules: getRecurringRules,

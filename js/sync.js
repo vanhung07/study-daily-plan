@@ -265,9 +265,13 @@
         ? StudyPlan.Store.mergeCloudState(parsed)
         : StudyPlan.Store.applyCloudState(parsed);
       if (changed) {
+        var th = StudyPlan.Store.getTheme();
+        document.documentElement.setAttribute('data-theme', th);
         document.documentElement.setAttribute(
-          'data-theme',
-          StudyPlan.Store.getTheme() === 'dark' ? 'dark' : 'light'
+          'data-color-scheme',
+          StudyPlan.Utils && typeof StudyPlan.Utils.isDarkTheme === 'function' && StudyPlan.Utils.isDarkTheme(th)
+            ? 'dark'
+            : 'light'
         );
       }
       return changed;

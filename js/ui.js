@@ -31,6 +31,8 @@
   var TOAST_ACTION_DURATION_MS = 7000;
   var FOCUS_SAVE_DELAY_MS = 350;
   var DEFAULT_THEME = 'light';
+  var CLICK_FX_SELECTOR =
+    '.btn, .nav-seg-btn, .weekday-chip, .preset-chip, .subject-chip, .block-focus-btn, .theme-card';
 
   // ---------------------------------------------------------------------
   // State
@@ -62,7 +64,9 @@
     /** @type {function(boolean): void|null} */
     confirmResolver: null,
     sidebarOpen: false,
-    lastTimerKey: ''
+    lastTimerKey: '',
+    lastLightTheme: 'light',
+    lastDarkTheme: 'dark'
   };
 
   /** @type {Object<string, HTMLElement|null>} */
@@ -70,6 +74,8 @@
   var lastFocusedBeforeModal = null;
   var focusSaveTimer = 0;
   var initialized = false;
+  /** @type {AudioContext|null} */
+  var sharedAudioCtx = null;
 
   /**
    * Shortcut for document.getElementById.
@@ -166,7 +172,8 @@
       isModalOpen(el.blockModal) ||
       isModalOpen(el.importModal) ||
       isModalOpen(el.confirmModal) ||
-      isModalOpen(el.cloudSetupModal)
+      isModalOpen(el.cloudSetupModal) ||
+      isModalOpen(el.themeModal)
     );
   }
 
@@ -234,23 +241,200 @@
   }
 
   // ---------------------------------------------------------------------
-  // Theme & sidebar drawer
+  // Theme, gallery & tactile click FX
   // ---------------------------------------------------------------------
 
   /**
-   * Applies a theme to the <html> element.
+   * Lazily initializes and returns the shared Web Audio context.
+   * @returns {AudioContext|null}
+   */
+  function getSharedAudioContext() {
+    if (sharedAudioCtx) return sharedAudioCtx;
+    var Ctx =
+      window.AudioContext ||
+      /** @type {typeof AudioContext|undefined} */ (/** @type {unknown} */ (window).webkitAudioContext);
+    if (!Ctx) return null;
+    sharedAudioCtx = new Ctx();
+    return sharedAudioCtx;
+  }
+
+  /**
+   * Checks whether subtle UI sound effects are currently permitted.
+   * @returns {boolean}
+   */
+  function canPlayUiSound() {
+    if (typeof Store.getClickFx === 'function' && !Store.getClickFx()) return false;
+    var snap = Timer && typeof Timer.getSnapshot === 'function' ? Timer.getSnapshot() : null;
+    if (snap && snap.muted) return false;
+    return true;
+  }
+
+  /** Plays a soft 35ms tactile UI pop sound when click FX and sound are enabled. */
+  function playClickPop() {
+    if (!canPlayUiSound()) return;
+    try {
+      var ctx = getSharedAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(function () {});
+      }
+      var now = ctx.currentTime;
+      var osc = ctx.createOscillator();
+      var gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(520, now);
+      osc.frequency.exponentialRampToValueAtTime(780, now + 0.035);
+      gain.gain.setValueAtTime(0.028, now);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + 0.035);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now);
+      osc.stop(now + 0.038);
+    } catch (err) {
+      /* ignore Web Audio restrictions */
+    }
+  }
+
+  /** Plays a gentle two-note chime when selecting a theme card. */
+  function playThemeChime() {
+    if (!canPlayUiSound()) return;
+    try {
+      var ctx = getSharedAudioContext();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') {
+        ctx.resume().catch(function () {});
+      }
+      var now = ctx.currentTime;
+      var notes = [587.33, 880];
+      for (var i = 0; i < notes.length; i += 1) {
+        var start = now + i * 0.055;
+        var osc = ctx.createOscillator();
+        var gain = ctx.createGain();
+        osc.type = 'sine';
+        osc.frequency.setValueAtTime(notes[i], start);
+        gain.gain.setValueAtTime(0.03, start);
+        gain.gain.exponentialRampToValueAtTime(0.0001, start + 0.11);
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.start(start);
+        osc.stop(start + 0.115);
+      }
+    } catch (err) {
+      /* ignore Web Audio restrictions */
+    }
+  }
+
+  /**
+   * Delegated pointerdown handler for tactile button ripple and subtle pop sound.
+   * @param {PointerEvent} e
+   */
+  function onDocumentPointerDown(e) {
+    if (typeof e.button === 'number' && e.button !== 0) return;
+    var rawTarget = /** @type {HTMLElement|null} */ (e.target);
+    if (!rawTarget || typeof rawTarget.closest !== 'function') return;
+    var btn = /** @type {HTMLButtonElement|HTMLElement|null} */ (rawTarget.closest(CLICK_FX_SELECTOR));
+    if (!btn) return;
+    if (/** @type {HTMLButtonElement} */ (btn).disabled || btn.getAttribute('aria-disabled') === 'true') return;
+
+    var fxEnabled = typeof Store.getClickFx === 'function' ? Store.getClickFx() : true;
+    if (!fxEnabled) return;
+    if (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    var rect = btn.getBoundingClientRect();
+    if (rect.width > 0 && rect.height > 0) {
+      var diameter = Math.max(rect.width, rect.height);
+      var x = e.clientX === 0 && e.clientY === 0 ? rect.width / 2 : e.clientX - rect.left;
+      var y = e.clientY === 0 && e.clientY === 0 ? rect.height / 2 : e.clientY - rect.top;
+      var wave = document.createElement('span');
+      wave.className = 'btn-ripple-wave';
+      wave.style.width = diameter + 'px';
+      wave.style.height = diameter + 'px';
+      wave.style.left = x + 'px';
+      wave.style.top = y + 'px';
+      btn.appendChild(wave);
+      window.setTimeout(function () {
+        if (wave.parentNode) wave.parentNode.removeChild(wave);
+      }, 560);
+    }
+
+    playClickPop();
+  }
+
+  /**
+   * Applies a theme to the <html> element and updates theme UI labels.
    * @param {string} theme
    */
   function applyTheme(theme) {
-    document.documentElement.setAttribute('data-theme', theme === 'dark' ? 'dark' : DEFAULT_THEME);
+    var meta = Utils.getThemeMeta(theme);
+    document.documentElement.setAttribute('data-theme', meta.id);
+    document.documentElement.setAttribute('data-color-scheme', meta.scheme);
+    if (meta.scheme === 'dark') {
+      state.lastDarkTheme = meta.id;
+    } else {
+      state.lastLightTheme = meta.id;
+    }
+    if (el.currentThemeLabel) {
+      el.currentThemeLabel.textContent = meta.name;
+    }
   }
 
-  /** Toggles between light and dark theme and persists the choice. */
+  /** Smartly switches between the user's chosen light theme and chosen dark theme. */
   function toggleTheme() {
-    var isDark = document.documentElement.getAttribute('data-theme') === 'dark';
-    var next = isDark ? 'light' : 'dark';
+    var currentMeta = Utils.getThemeMeta(Store.getTheme());
+    var next =
+      currentMeta.scheme === 'dark'
+        ? state.lastLightTheme || DEFAULT_THEME
+        : state.lastDarkTheme || 'dark';
     applyTheme(next);
     Store.setTheme(next);
+    if (isModalOpen(el.themeModal)) renderThemeModal();
+  }
+
+  /** Renders all 8 theme cards and click FX switch inside the theme gallery modal. */
+  function renderThemeModal() {
+    var activeId = Utils.getThemeMeta(Store.getTheme()).id;
+    if (el.themeGrid && Array.isArray(Utils.THEMES)) {
+      el.themeGrid.innerHTML = Utils.THEMES.map(function (t) {
+        var isActive = t.id === activeId;
+        var p = t.preview || ['#ffffff', '#f7f6f3', '#2383e2', '#0f7b6c'];
+        return (
+          '<button type="button" class="theme-card' + (isActive ? ' is-active' : '') +
+          '" data-theme-id="' + esc(t.id) + '" role="radio" aria-checked="' + (isActive ? 'true' : 'false') + '">' +
+          '<div class="theme-preview" style="background: ' + esc(p[0]) + '; --preview-accent: ' + esc(p[2]) + ';">' +
+          '<span class="theme-preview-sidebar" style="background: ' + esc(p[1]) + ';">' +
+          '<span class="theme-preview-dots"><span></span><span></span><span></span></span>' +
+          '<span class="theme-preview-line"></span>' +
+          '<span class="theme-preview-line" style="width: 55%;"></span>' +
+          '</span>' +
+          '<span class="theme-preview-main">' +
+          '<span class="theme-preview-accent" style="background: ' + esc(p[2]) + ';"></span>' +
+          '<span class="theme-preview-pill" style="background: ' + esc(p[3]) + '24; border-left-color: ' + esc(p[2]) + ';"></span>' +
+          '</span>' +
+          '</div>' +
+          '<div class="theme-card-body">' +
+          '<div class="theme-card-title-row">' +
+          '<span class="theme-card-name">' + esc(t.name) + '</span>' +
+          '<span class="theme-card-badge">' + esc(t.badge) + '</span>' +
+          '</div>' +
+          '<p class="theme-card-desc">' + esc(t.desc) + '</p>' +
+          '</div>' +
+          '</button>'
+        );
+      }).join('');
+    }
+    if (el.toggleClickFx) {
+      var fxOn = typeof Store.getClickFx === 'function' ? Store.getClickFx() : true;
+      el.toggleClickFx.setAttribute('aria-checked', fxOn ? 'true' : 'false');
+      el.toggleClickFx.classList.toggle('is-active', fxOn);
+    }
+  }
+
+  /** Opens the theme gallery modal. */
+  function openThemeModal() {
+    if (!el.themeModal) return;
+    if (state.sidebarOpen) setSidebarOpen(false);
+    renderThemeModal();
+    openModal(el.themeModal);
   }
 
   /**
@@ -541,6 +725,7 @@
   /** Re-renders every dynamic area from current state. */
   function renderAll() {
     if (!initialized) return;
+    applyTheme(Store.getTheme());
     renderHeader();
     renderStreak();
     renderWeeklyRepeat();
@@ -548,6 +733,7 @@
     renderDailyFocus();
     renderStats();
     renderSubjects();
+    if (isModalOpen(el.themeModal)) renderThemeModal();
     Timeline.render(state.currentDateKey, state.selectedSubjectFilter);
     renderTimerBar();
   }
@@ -1147,6 +1333,31 @@
   /** Wires sidebar, header and timer bar events. */
   function bindShellEvents() {
     onClick(el.themeToggle, toggleTheme);
+    onClick(el.btnThemeGallery, openThemeModal);
+    onClick(el.btnSidebarTheme, openThemeModal);
+    onClick(el.btnCloseThemeModal, function () { closeModal(el.themeModal); });
+    onClick(el.btnThemeDone, function () { closeModal(el.themeModal); });
+    if (el.themeGrid) {
+      el.themeGrid.addEventListener('click', function (e) {
+        var card = /** @type {HTMLElement} */ (e.target).closest('.theme-card');
+        if (!card) return;
+        var themeId = card.getAttribute('data-theme-id') || '';
+        if (!Utils.isValidTheme(themeId)) return;
+        var meta = Utils.getThemeMeta(themeId);
+        applyTheme(meta.id);
+        Store.setTheme(meta.id);
+        renderThemeModal();
+        playThemeChime();
+        showToast('Đã áp dụng giao diện "' + meta.name + '"!');
+      });
+    }
+    onClick(el.toggleClickFx, function () {
+      if (typeof Store.setClickFx !== 'function') return;
+      var nextFx = !Store.getClickFx();
+      Store.setClickFx(nextFx);
+      renderThemeModal();
+      if (nextFx) playClickPop();
+    });
     onClick(el.btnOpenSidebar, function () { setSidebarOpen(true); });
     onClick(el.btnCloseSidebar, function () { setSidebarOpen(false); });
     onClick(el.sidebarBackdrop, function () { setSidebarOpen(false); });
@@ -1390,7 +1601,7 @@
     }
 
     // Close on overlay click.
-    [el.blockModal, el.importModal, el.cloudSetupModal].forEach(function (modal) {
+    [el.blockModal, el.importModal, el.cloudSetupModal, el.themeModal].forEach(function (modal) {
       if (!modal) return;
       modal.addEventListener('mousedown', function (e) {
         if (e.target !== modal) return;
@@ -1539,6 +1750,7 @@
   function onKeyDown(e) {
     if (e.key === 'Escape') {
       if (isModalOpen(el.confirmModal)) resolveConfirm(false);
+      else if (isModalOpen(el.themeModal)) closeModal(el.themeModal);
       else if (isModalOpen(el.cloudSetupModal)) closeModal(el.cloudSetupModal);
       else if (isModalOpen(el.importModal)) {
         state.pendingImportText = '';
@@ -1578,6 +1790,14 @@
       btnOpenSidebar: 'btn-open-sidebar',
       btnCloseSidebar: 'btn-close-sidebar',
       themeToggle: 'theme-toggle',
+      btnThemeGallery: 'btn-theme-gallery',
+      btnSidebarTheme: 'btn-sidebar-theme',
+      currentThemeLabel: 'current-theme-label',
+      themeModal: 'theme-modal',
+      btnCloseThemeModal: 'btn-close-theme-modal',
+      themeGrid: 'theme-grid',
+      toggleClickFx: 'toggle-click-fx',
+      btnThemeDone: 'btn-theme-done',
       streakCount: 'streak-count',
       calTitle: 'mini-cal-title',
       calPrev: 'cal-prev-month',
@@ -1705,6 +1925,7 @@
     bindShellEvents();
     bindBlockModalEvents();
     bindCloudSyncEvents();
+    document.addEventListener('pointerdown', onDocumentPointerDown);
     document.addEventListener('keydown', onKeyDown);
 
     Timeline.init({
