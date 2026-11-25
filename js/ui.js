@@ -173,7 +173,8 @@
       isModalOpen(el.importModal) ||
       isModalOpen(el.confirmModal) ||
       isModalOpen(el.cloudSetupModal) ||
-      isModalOpen(el.themeModal)
+      isModalOpen(el.themeModal) ||
+      isModalOpen(el.weeklyStatsModal)
     );
   }
 
@@ -595,6 +596,150 @@
     if (el.statPlanned) el.statPlanned.textContent = Utils.formatDurationVi(stats.plannedMin);
     if (el.statFocused) el.statFocused.textContent = Utils.formatDurationVi(stats.focusedMin);
     if (el.statTasks) el.statTasks.textContent = stats.completedCount + '/' + stats.totalCount;
+    renderWeeklyMiniStats();
+    if (isModalOpen(el.weeklyStatsModal)) renderWeeklyStatsModal();
+  }
+
+  var weeklyStatsAnchor = Utils.getTodayKey();
+  /** @type {'completed'|'pending'} */
+  var weeklyTaskTab = 'completed';
+
+  /** Renders the compact 7-day weekly progress mini-chart in the sidebar. */
+  function renderWeeklyMiniStats() {
+    if (!el.weeklyMiniBars || typeof Store.getWeekStats !== 'function') return;
+    var wk = Store.getWeekStats(state.currentDateKey);
+    if (el.weeklyMiniTasks) {
+      el.weeklyMiniTasks.textContent = wk.completedCount + '/' + wk.totalCount + ' task';
+    }
+    if (el.weeklyMiniPercent) {
+      el.weeklyMiniPercent.textContent = wk.taskPercent + '%';
+    }
+    var maxPlanned = wk.days.reduce(function (m, d) { return Math.max(m, d.plannedMin); }, 60);
+    el.weeklyMiniBars.innerHTML = wk.days.map(function (d) {
+      var plannedPct = d.plannedMin > 0 ? Math.max(14, Math.round((d.plannedMin / maxPlanned) * 100)) : 0;
+      var donePct = d.completedMin > 0 ? Math.max(14, Math.round((d.completedMin / maxPlanned) * 100)) : 0;
+      return (
+        '<button type="button" class="wk-mini-col' + (d.isToday ? ' is-today' : '') +
+        '" data-date="' + d.dateKey + '" title="' + esc(d.shortLabel + ' ' + d.dateShort + ': ' + d.completedCount + '/' + d.totalCount + ' task') + '">' +
+        '<span class="wk-mini-track">' +
+        (plannedPct > 0 ? '<span class="wk-mini-planned" style="height:' + plannedPct + '%"></span>' : '') +
+        (donePct > 0 ? '<span class="wk-mini-done" style="height:' + donePct + '%"></span>' : '') +
+        '</span>' +
+        '<span class="wk-mini-label">' + d.shortLabel + '</span>' +
+        '</button>'
+      );
+    }).join('');
+  }
+
+  /** Opens the full Weekly Analytics modal anchored to the currently viewed week. */
+  function openWeeklyStatsModal() {
+    if (!el.weeklyStatsModal) return;
+    weeklyStatsAnchor = state.currentDateKey;
+    renderWeeklyStatsModal();
+    openModal(el.weeklyStatsModal);
+  }
+
+  /** Renders all KPIs, 7-day chart, subject breakdown and task list inside the Weekly Analytics modal. */
+  function renderWeeklyStatsModal() {
+    if (!el.weeklyStatsModal || typeof Store.getWeekStats !== 'function') return;
+    var wk = Store.getWeekStats(weeklyStatsAnchor);
+    var startD = Utils.parseDateKey(wk.startDateKey);
+    var endD = Utils.parseDateKey(wk.endDateKey);
+    var rangeText =
+      Utils.pad2(startD.getDate()) + '/' + Utils.pad2(startD.getMonth() + 1) +
+      ' \u2013 ' +
+      Utils.pad2(endD.getDate()) + '/' + Utils.pad2(endD.getMonth() + 1);
+
+    if (el.weeklyRangeBadge) el.weeklyRangeBadge.textContent = rangeText;
+    if (el.weeklyActiveDaysLabel) el.weeklyActiveDaysLabel.textContent = wk.activeDays + '/7 ng\u00E0y c\u00F3 h\u1ECDc';
+    if (el.wkKpiTasks) el.wkKpiTasks.textContent = wk.completedCount + '/' + wk.totalCount;
+    if (el.wkKpiTaskRate) el.wkKpiTaskRate.textContent = wk.taskPercent + '% ho\u00E0n th\u00E0nh';
+    if (el.wkKpiHours) el.wkKpiHours.textContent = Utils.formatDurationVi(wk.completedMin);
+    if (el.wkKpiPlanned) el.wkKpiPlanned.textContent = 'tr\u00EAn ' + Utils.formatDurationVi(wk.plannedMin) + ' l\u00EAn l\u1ECBch';
+    if (el.wkKpiFocused) el.wkKpiFocused.textContent = Utils.formatDurationVi(wk.focusedMin);
+    if (el.wkKpiSubtasks) el.wkKpiSubtasks.textContent = wk.subtasksDone + '/' + wk.subtasksTotal;
+
+    // 7-day chart bars
+    if (el.weeklyChartBars) {
+      var maxMin = wk.days.reduce(function (m, d) { return Math.max(m, d.plannedMin); }, 60);
+      el.weeklyChartBars.innerHTML = wk.days.map(function (d) {
+        var plannedPct = d.plannedMin > 0 ? Math.max(10, Math.round((d.plannedMin / maxMin) * 100)) : 0;
+        var donePct = d.completedMin > 0 ? Math.max(10, Math.round((d.completedMin / maxMin) * 100)) : 0;
+        return (
+          '<button type="button" class="wk-bar-col' + (d.isToday ? ' is-today' : '') +
+          '" data-date="' + d.dateKey + '" title="' + esc(d.shortLabel + ' (' + d.dateShort + '): ' + d.completedCount + '/' + d.totalCount + ' task \u00B7 ' + Utils.formatDurationVi(d.completedMin)) + '">' +
+          '<span class="wk-bar-count">' + d.completedCount + '/' + d.totalCount + '</span>' +
+          '<span class="wk-bar-track">' +
+          (plannedPct > 0 ? '<span class="wk-bar-planned" style="height:' + plannedPct + '%"></span>' : '') +
+          (donePct > 0 ? '<span class="wk-bar-done" style="height:' + donePct + '%"></span>' : '') +
+          '</span>' +
+          '<span class="wk-bar-day">' + d.shortLabel + '</span>' +
+          '<span class="wk-bar-date">' + d.dateShort + '</span>' +
+          '</button>'
+        );
+      }).join('');
+    }
+
+    // Subject distribution
+    if (el.weeklySubjectBreakdown) {
+      if (wk.bySubject.length === 0) {
+        el.weeklySubjectBreakdown.innerHTML = '<p class="weekly-empty-msg">Tu\u1EA7n n\u00E0y ch\u01B0a c\u00F3 khung gi\u1EDD h\u1ECDc n\u00E0o.</p>';
+      } else {
+        el.weeklySubjectBreakdown.innerHTML = wk.bySubject.map(function (s) {
+          return (
+            '<div class="wk-subject-row" data-color="' + esc(s.color) + '">' +
+            '<div class="wk-subject-top">' +
+            '<span class="wk-subject-name"><span class="subject-dot" data-color="' + esc(s.color) + '"></span>' + esc(s.name) + '</span>' +
+            '<span class="wk-subject-meta">' + s.completedCount + '/' + s.totalCount + ' task \u00B7 ' + Utils.formatDurationVi(s.completedMin) + '/' + Utils.formatDurationVi(s.plannedMin) + ' (' + s.percent + '%)</span>' +
+            '</div>' +
+            '<div class="wk-subject-track"><div class="wk-subject-fill" style="width:' + s.percent + '%"></div></div>' +
+            '</div>'
+          );
+        }).join('');
+      }
+    }
+
+    // Task tabs & list
+    if (el.wkTabCompletedCount) el.wkTabCompletedCount.textContent = String(wk.completedTasks.length);
+    if (el.wkTabPendingCount) el.wkTabPendingCount.textContent = String(wk.pendingTasks.length);
+    if (el.wkTabCompleted) {
+      el.wkTabCompleted.classList.toggle('active', weeklyTaskTab === 'completed');
+      el.wkTabCompleted.setAttribute('aria-selected', weeklyTaskTab === 'completed' ? 'true' : 'false');
+    }
+    if (el.wkTabPending) {
+      el.wkTabPending.classList.toggle('active', weeklyTaskTab === 'pending');
+      el.wkTabPending.setAttribute('aria-selected', weeklyTaskTab === 'pending' ? 'true' : 'false');
+    }
+
+    if (el.weeklyTaskList) {
+      var list = weeklyTaskTab === 'pending' ? wk.pendingTasks : wk.completedTasks;
+      if (list.length === 0) {
+        el.weeklyTaskList.innerHTML =
+          '<li class="weekly-empty-msg">' +
+          (weeklyTaskTab === 'completed'
+            ? 'Ch\u01B0a c\u00F3 task n\u00E0o \u0111\u01B0\u1EE3c \u0111\u00E1nh d\u1EA5u ho\u00E0n th\u00E0nh trong tu\u1EA7n n\u00E0y.'
+            : 'Tuy\u1EC7t v\u1EDDi! Kh\u00F4ng c\u00F2n task n\u00E0o ch\u01B0a ho\u00E0n th\u00E0nh trong tu\u1EA7n n\u00E0y.') +
+          '</li>';
+      } else {
+        el.weeklyTaskList.innerHTML = list.map(function (t) {
+          var subInfo = t.subtasksTotal > 0 ? ' \u00B7 \u2713 ' + t.subtasksDone + '/' + t.subtasksTotal : '';
+          var focusInfo = t.focusedMin > 0 ? ' \u00B7 \u23F1 ' + Utils.formatDurationVi(t.focusedMin) : '';
+          return (
+            '<li class="wk-task-item" data-color="' + esc(t.subjectColor) + '" data-date="' + t.dateKey + '">' +
+            '<div class="wk-task-left">' +
+            '<span class="wk-task-title">' + (t.completed ? '\u2713 ' : '') + esc(t.title) + '</span>' +
+            '<span class="wk-task-sub">' +
+            '<span class="wk-task-day-pill">' + t.shortDayLabel + ' ' + t.dateShort + '</span>' +
+            '<span>' + esc(t.subjectName) + '</span>' +
+            '<span>' + Utils.minutesToTime(t.startMin) + ' \u2013 ' + Utils.minutesToTime(t.endMin) + subInfo + focusInfo + '</span>' +
+            '</span>' +
+            '</div>' +
+            '<span class="wk-task-right">' + Utils.formatDurationVi(t.durationMin) + '</span>' +
+            '</li>'
+          );
+        }).join('');
+      }
+    }
   }
 
   /** Renders the subject list (with the "all subjects" item). */
@@ -1383,6 +1528,58 @@
       );
     });
 
+    // Weekly stats modal & sidebar mini-chart
+    onClick(el.btnOpenWeeklyStats, openWeeklyStatsModal);
+    onClick(el.btnHeaderStats, openWeeklyStatsModal);
+    onClick(el.btnCloseWeeklyStats, function () { closeModal(el.weeklyStatsModal); });
+    onClick(el.btnWeeklyStatsDone, function () { closeModal(el.weeklyStatsModal); });
+    onClick(el.btnWeekPrev, function () {
+      weeklyStatsAnchor = Utils.addDays(weeklyStatsAnchor, -7);
+      renderWeeklyStatsModal();
+    });
+    onClick(el.btnWeekCurrent, function () {
+      weeklyStatsAnchor = Utils.getTodayKey();
+      renderWeeklyStatsModal();
+    });
+    onClick(el.btnWeekNext, function () {
+      weeklyStatsAnchor = Utils.addDays(weeklyStatsAnchor, 7);
+      renderWeeklyStatsModal();
+    });
+    onClick(el.wkTabCompleted, function () {
+      weeklyTaskTab = 'completed';
+      renderWeeklyStatsModal();
+    });
+    onClick(el.wkTabPending, function () {
+      weeklyTaskTab = 'pending';
+      renderWeeklyStatsModal();
+    });
+    if (el.weeklyMiniBars) {
+      el.weeklyMiniBars.addEventListener('click', function (e) {
+        var col = /** @type {HTMLElement} */ (e.target).closest('.wk-mini-col');
+        if (!col) return;
+        setDate(col.getAttribute('data-date') || state.currentDateKey, true);
+        if (state.sidebarOpen) setSidebarOpen(false);
+      });
+    }
+    if (el.weeklyChartBars) {
+      el.weeklyChartBars.addEventListener('click', function (e) {
+        var col = /** @type {HTMLElement} */ (e.target).closest('.wk-bar-col');
+        if (!col) return;
+        closeModal(el.weeklyStatsModal);
+        setDate(col.getAttribute('data-date') || state.currentDateKey, true);
+      });
+    }
+    if (el.weeklyTaskList) {
+      el.weeklyTaskList.addEventListener('click', function (e) {
+        var item = /** @type {HTMLElement} */ (e.target).closest('.wk-task-item');
+        if (!item) return;
+        var dk = item.getAttribute('data-date');
+        if (!dk) return;
+        closeModal(el.weeklyStatsModal);
+        setDate(dk, true);
+      });
+    }
+
     // Mini calendar
     onClick(el.calPrev, function () {
       state.calendarMonth -= 1;
@@ -1601,7 +1798,7 @@
     }
 
     // Close on overlay click.
-    [el.blockModal, el.importModal, el.cloudSetupModal, el.themeModal].forEach(function (modal) {
+    [el.blockModal, el.importModal, el.cloudSetupModal, el.themeModal, el.weeklyStatsModal].forEach(function (modal) {
       if (!modal) return;
       modal.addEventListener('mousedown', function (e) {
         if (e.target !== modal) return;
@@ -1750,6 +1947,7 @@
   function onKeyDown(e) {
     if (e.key === 'Escape') {
       if (isModalOpen(el.confirmModal)) resolveConfirm(false);
+      else if (isModalOpen(el.weeklyStatsModal)) closeModal(el.weeklyStatsModal);
       else if (isModalOpen(el.themeModal)) closeModal(el.themeModal);
       else if (isModalOpen(el.cloudSetupModal)) closeModal(el.cloudSetupModal);
       else if (isModalOpen(el.importModal)) {
@@ -1812,6 +2010,32 @@
       statPlanned: 'stat-planned',
       statFocused: 'stat-focused',
       statTasks: 'stat-tasks',
+      btnOpenWeeklyStats: 'btn-open-weekly-stats',
+      weeklyMiniTasks: 'weekly-mini-tasks',
+      weeklyMiniPercent: 'weekly-mini-percent',
+      weeklyMiniBars: 'weekly-mini-bars',
+      btnHeaderStats: 'btn-header-stats',
+      weeklyStatsModal: 'weekly-stats-modal',
+      btnCloseWeeklyStats: 'btn-close-weekly-stats',
+      btnWeeklyStatsDone: 'btn-weekly-stats-done',
+      weeklyRangeBadge: 'weekly-range-badge',
+      btnWeekPrev: 'btn-week-prev',
+      btnWeekCurrent: 'btn-week-current',
+      btnWeekNext: 'btn-week-next',
+      weeklyActiveDaysLabel: 'weekly-active-days-label',
+      wkKpiTasks: 'wk-kpi-tasks',
+      wkKpiTaskRate: 'wk-kpi-task-rate',
+      wkKpiHours: 'wk-kpi-hours',
+      wkKpiPlanned: 'wk-kpi-planned',
+      wkKpiFocused: 'wk-kpi-focused',
+      wkKpiSubtasks: 'wk-kpi-subtasks',
+      weeklyChartBars: 'weekly-chart-bars',
+      weeklySubjectBreakdown: 'weekly-subject-breakdown',
+      wkTabCompleted: 'wk-tab-completed',
+      wkTabPending: 'wk-tab-pending',
+      wkTabCompletedCount: 'wk-tab-completed-count',
+      wkTabPendingCount: 'wk-tab-pending-count',
+      weeklyTaskList: 'weekly-task-list',
       btnToggleAddSubject: 'btn-toggle-add-subject',
       addSubjectForm: 'add-subject-form',
       newSubjectName: 'new-subject-name',

@@ -8,7 +8,7 @@
 - **Quản lý môn học:** mỗi môn có một màu pastel riêng; lọc lịch theo môn chỉ với một cú nhấp.
 - **Việc nhỏ (sub-task):** chia khung giờ thành danh sách việc cần làm và tick hoàn thành.
 - **Bộ đếm tập trung:** chế độ Pomodoro 25/5 hoặc đếm theo độ dài khung giờ. Đồng hồ dựa trên mốc thời gian nên vẫn chính xác khi bạn đổi ngày, đổi tab hoặc tải lại trang; thời gian đã học được tự động cộng vào khung giờ.
-- **Tổng quan trong ngày:** mục tiêu quan trọng nhất, phần trăm hoàn thành, thời gian đã lên lịch / thực học và chuỗi ngày học liên tiếp.
+- **Tổng quan trong ngày & Thống kê tuần:** mục tiêu quan trọng nhất, phần trăm hoàn thành, biểu đồ 7 ngày (`T2 – CN`), phân bổ giờ học theo từng môn, danh sách task đã hoàn thành/chưa xong trong tuần và chuỗi ngày học liên tiếp.
 - **Lịch nhỏ:** xem nhanh những ngày đã có kế hoạch.
 - **Lặp lại hàng tuần:** bật công tắc **Lặp lại tuần** trên thanh bên để toàn bộ lịch học của tuần này tự động lặp sang các tuần tiếp theo (hoặc chọn lặp riêng từng khung giờ theo các thứ `T2 – CN`, kèm nút chép nhanh lịch tuần trước).
 - **Bộ sưu tập 8 Giao diện & Hiệu ứng tương tác:** đổi nhanh phong cách học tập yêu thích (**Doraemon Sky**, **Anime Sakura**, **Thảo Nguyên Ghibli**, **Đêm Sao Anime**, **Notion Warm**, **Linear Midnight**, **Cupertino Frost**, **Nordic Fjord**) cùng hiệu ứng gợn sóng & âm thanh nút bấm êm tai.

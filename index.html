@@ -312,6 +312,35 @@
           </div>
         </section>
 
+        <!-- Weekly Summary Mini-Chart Section -->
+        <section class="sidebar-section" aria-label="Thống kê hoàn thành trong tuần">
+          <div class="section-heading">
+            <span class="section-title section-title-with-icon">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <line x1="18" y1="20" x2="18" y2="10"></line>
+                <line x1="12" y1="20" x2="12" y2="4"></line>
+                <line x1="6" y1="20" x2="6" y2="14"></line>
+              </svg>
+              <span>Thống kê tuần</span>
+            </span>
+            <button
+              type="button"
+              id="btn-open-weekly-stats"
+              class="btn-text-action"
+              title="Xem báo cáo chi tiết các task trong tuần"
+            >
+              Chi tiết →
+            </button>
+          </div>
+          <div class="weekly-mini-card">
+            <div class="weekly-mini-summary">
+              <span id="weekly-mini-tasks" class="weekly-mini-count">0/0 task</span>
+              <span id="weekly-mini-percent" class="weekly-mini-percent">0%</span>
+            </div>
+            <div id="weekly-mini-bars" class="weekly-mini-bars" role="group" aria-label="Biểu đồ 7 ngày trong tuần"></div>
+          </div>
+        </section>
+
         <!-- Subjects Section -->
         <section class="sidebar-section sidebar-section--subjects" aria-label="Danh sách môn học">
           <div class="section-heading">
@@ -492,6 +521,21 @@
         </div>
 
         <div class="header-right">
+          <button
+            type="button"
+            id="btn-header-stats"
+            class="btn btn-theme-trigger btn-stats-trigger"
+            aria-label="Xem thống kê hoàn thành trong tuần"
+            title="Thống kê tuần"
+          >
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span class="header-stats-label">Thống kê</span>
+          </button>
+
           <button
             type="button"
             id="btn-theme-gallery"
@@ -1136,6 +1180,123 @@
 
         <div class="modal-footer-right">
           <button type="button" id="btn-theme-done" class="btn btn-primary btn-sm">Xong</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================
+       Modal 6: Weekly Completed Tasks & Study Analytics Modal
+       ====================================================================== -->
+  <div id="weekly-stats-modal" class="modal-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="weekly-stats-title">
+    <div class="modal-card modal-card--lg">
+      <div class="modal-header">
+        <div class="modal-header-title">
+          <h2 id="weekly-stats-title" class="modal-title section-title-with-icon">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <line x1="18" y1="20" x2="18" y2="10"></line>
+              <line x1="12" y1="20" x2="12" y2="4"></line>
+              <line x1="6" y1="20" x2="6" y2="14"></line>
+            </svg>
+            <span>Thống kê hoàn thành tuần</span>
+          </h2>
+          <span id="weekly-range-badge" class="duration-pill">23/11 – 29/11</span>
+        </div>
+        <button
+          type="button"
+          id="btn-close-weekly-stats"
+          class="icon-btn icon-btn--sm"
+          aria-label="Đóng thống kê tuần"
+          title="Đóng (Esc)"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <line x1="18" y1="6" x2="6" y2="18"></line>
+            <line x1="6" y1="6" x2="18" y2="18"></line>
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-body weekly-stats-body">
+        <!-- Week Navigation Bar -->
+        <div class="weekly-nav-bar">
+          <div class="date-nav-group" role="group" aria-label="Chuyển tuần thống kê">
+            <button type="button" id="btn-week-prev" class="nav-seg-btn" title="Tuần trước" aria-label="Tuần trước">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="15 18 9 12 15 6"></polyline>
+              </svg>
+            </button>
+            <button type="button" id="btn-week-current" class="nav-seg-btn nav-seg-btn--today">Tuần này</button>
+            <button type="button" id="btn-week-next" class="nav-seg-btn" title="Tuần sau" aria-label="Tuần sau">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <polyline points="9 18 15 12 9 6"></polyline>
+              </svg>
+            </button>
+          </div>
+          <span id="weekly-active-days-label" class="weekly-active-pill">0/7 ngày có học</span>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="weekly-kpi-grid">
+          <div class="weekly-kpi-card">
+            <span class="weekly-kpi-label">Task hoàn thành</span>
+            <span id="wk-kpi-tasks" class="weekly-kpi-value">0/0</span>
+            <span id="wk-kpi-task-rate" class="weekly-kpi-sub">0% hoàn thành</span>
+          </div>
+          <div class="weekly-kpi-card">
+            <span class="weekly-kpi-label">Giờ đã hoàn thành</span>
+            <span id="wk-kpi-hours" class="weekly-kpi-value">0p</span>
+            <span id="wk-kpi-planned" class="weekly-kpi-sub">trên 0p lên lịch</span>
+          </div>
+          <div class="weekly-kpi-card">
+            <span class="weekly-kpi-label">Thực học (Focus)</span>
+            <span id="wk-kpi-focused" class="weekly-kpi-value">0p</span>
+            <span class="weekly-kpi-sub">từ đồng hồ tập trung</span>
+          </div>
+          <div class="weekly-kpi-card">
+            <span class="weekly-kpi-label">Đầu việc nhỏ</span>
+            <span id="wk-kpi-subtasks" class="weekly-kpi-value">0/0</span>
+            <span class="weekly-kpi-sub">sub-task đã tick</span>
+          </div>
+        </div>
+
+        <!-- 7-Day Bar Chart -->
+        <div class="weekly-panel">
+          <div class="weekly-panel-head">
+            <h3 class="weekly-panel-title">Tiến độ 7 ngày (T2 – CN)</h3>
+            <span class="weekly-panel-hint">Nhấn vào cột để mở ngày đó</span>
+          </div>
+          <div id="weekly-chart-bars" class="weekly-chart-bars"></div>
+        </div>
+
+        <!-- Subject Distribution -->
+        <div class="weekly-panel">
+          <div class="weekly-panel-head">
+            <h3 class="weekly-panel-title">Phân bổ theo môn học</h3>
+          </div>
+          <div id="weekly-subject-breakdown" class="weekly-subject-list"></div>
+        </div>
+
+        <!-- Completed / Pending Tasks in Week -->
+        <div class="weekly-panel">
+          <div class="weekly-panel-head">
+            <h3 class="weekly-panel-title">Danh sách task trong tuần</h3>
+            <div class="weekly-tab-group" role="tablist" aria-label="Lọc task theo trạng thái">
+              <button type="button" id="wk-tab-completed" class="weekly-tab-btn active" role="tab" aria-selected="true">
+                Đã xong (<span id="wk-tab-completed-count">0</span>)
+              </button>
+              <button type="button" id="wk-tab-pending" class="weekly-tab-btn" role="tab" aria-selected="false">
+                Chưa xong (<span id="wk-tab-pending-count">0</span>)
+              </button>
+            </div>
+          </div>
+          <ul id="weekly-task-list" class="weekly-task-list"></ul>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <div class="modal-footer-left"></div>
+        <div class="modal-footer-right">
+          <button type="button" id="btn-weekly-stats-done" class="btn btn-primary btn-sm">Đóng</button>
         </div>
       </div>
     </div>

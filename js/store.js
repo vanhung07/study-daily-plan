@@ -1299,6 +1299,163 @@
   }
 
   /**
+   * Compute full Monday-to-Sunday statistics for the week containing anchorDateKey.
+   * Includes daily breakdown, subject distribution, sub-task totals, and completed/pending task lists.
+   * @param {string} [anchorDateKey]
+   * @returns {Object}
+   */
+  function getWeekStats(anchorDateKey) {
+    const safeAnchor = Utils.isValidDateKey(anchorDateKey) ? /** @type {string} */ (anchorDateKey) : Utils.getTodayKey();
+    const anchorDate = Utils.parseDateKey(safeAnchor);
+    const mondayOffset = (anchorDate.getDay() + 6) % 7;
+    const startDateKey = Utils.addDays(safeAnchor, -mondayOffset);
+    const endDateKey = Utils.addDays(startDateKey, 6);
+    const todayKey = Utils.getTodayKey();
+    const shortLabels = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'];
+
+    /** @type {Array<Object>} */
+    const days = [];
+    /** @type {Record<string, Object>} */
+    const subjectMap = {};
+    /** @type {Array<Object>} */
+    const completedTasks = [];
+    /** @type {Array<Object>} */
+    const pendingTasks = [];
+
+    let plannedMin = 0;
+    let completedMin = 0;
+    let focusedMin = 0;
+    let totalCount = 0;
+    let completedCount = 0;
+    let subtasksTotal = 0;
+    let subtasksDone = 0;
+    let activeDays = 0;
+
+    for (let i = 0; i < 7; i++) {
+      const dateKey = Utils.addDays(startDateKey, i);
+      const parsed = Utils.parseDateKey(dateKey);
+      const dateShort = Utils.pad2(parsed.getDate()) + '/' + Utils.pad2(parsed.getMonth() + 1);
+      const blocks = resolveEffectiveBlocks(dateKey);
+
+      let dPlanned = 0;
+      let dCompleted = 0;
+      let dFocused = 0;
+      let dTotal = 0;
+      let dDone = 0;
+
+      blocks.forEach((b) => {
+        const dur = Math.max(0, b.endMin - b.startMin);
+        const subj = b.subjectId ? state.subjects.find((s) => s.id === b.subjectId) || null : null;
+        const subjKey = subj ? subj.id : '__none__';
+        const subjName = subj ? subj.name : 'Chưa phân môn';
+        const subjColor = subj ? subj.color : 'slate';
+
+        dPlanned += dur;
+        dFocused += b.focusedMin;
+        dTotal++;
+        if (b.completed) {
+          dCompleted += dur;
+          dDone++;
+        }
+
+        const subs = Array.isArray(b.subtasks) ? b.subtasks : [];
+        const sDone = subs.filter((s) => s.done).length;
+        subtasksTotal += subs.length;
+        subtasksDone += sDone;
+
+        if (!subjectMap[subjKey]) {
+          subjectMap[subjKey] = {
+            subjectId: subj ? subj.id : null,
+            name: subjName,
+            color: subjColor,
+            plannedMin: 0,
+            completedMin: 0,
+            focusedMin: 0,
+            totalCount: 0,
+            completedCount: 0,
+            percent: 0
+          };
+        }
+        subjectMap[subjKey].plannedMin += dur;
+        subjectMap[subjKey].focusedMin += b.focusedMin;
+        subjectMap[subjKey].totalCount++;
+        if (b.completed) {
+          subjectMap[subjKey].completedMin += dur;
+          subjectMap[subjKey].completedCount++;
+        }
+
+        const taskEntry = {
+          id: b.id,
+          dateKey: dateKey,
+          shortDayLabel: shortLabels[i],
+          dateShort: dateShort,
+          title: b.title,
+          subjectName: subjName,
+          subjectColor: subjColor,
+          startMin: b.startMin,
+          endMin: b.endMin,
+          durationMin: dur,
+          focusedMin: b.focusedMin,
+          priority: b.priority,
+          subtasksDone: sDone,
+          subtasksTotal: subs.length,
+          completed: b.completed
+        };
+        if (b.completed) completedTasks.push(taskEntry);
+        else pendingTasks.push(taskEntry);
+      });
+
+      plannedMin += dPlanned;
+      completedMin += dCompleted;
+      focusedMin += dFocused;
+      totalCount += dTotal;
+      completedCount += dDone;
+      if (dDone > 0 || dFocused > 0) activeDays++;
+
+      days.push({
+        dateKey: dateKey,
+        shortLabel: shortLabels[i],
+        dateShort: dateShort,
+        dayOfMonth: parsed.getDate(),
+        isToday: dateKey === todayKey,
+        plannedMin: dPlanned,
+        completedMin: dCompleted,
+        focusedMin: dFocused,
+        totalCount: dTotal,
+        completedCount: dDone,
+        percent: dPlanned > 0 ? Math.round((dCompleted / dPlanned) * 100) : 0
+      });
+    }
+
+    const bySubject = Object.keys(subjectMap)
+      .map((k) => {
+        const entry = subjectMap[k];
+        entry.percent = entry.plannedMin > 0 ? Math.round((entry.completedMin / entry.plannedMin) * 100) : 0;
+        return entry;
+      })
+      .sort((a, b) => b.completedMin - a.completedMin || b.plannedMin - a.plannedMin);
+
+    return {
+      startDateKey: startDateKey,
+      endDateKey: endDateKey,
+      plannedMin: plannedMin,
+      completedMin: completedMin,
+      focusedMin: focusedMin,
+      totalCount: totalCount,
+      completedCount: completedCount,
+      percent: plannedMin > 0 ? Math.round((completedMin / plannedMin) * 100) : 0,
+      taskPercent: totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0,
+      subtasksTotal: subtasksTotal,
+      subtasksDone: subtasksDone,
+      activeDays: activeDays,
+      days: days,
+      bySubject: bySubject,
+      completedTasks: completedTasks,
+      pendingTasks: pendingTasks
+    };
+  }
+
+  /**
    * Consecutive active days ending today (or yesterday, if today has no activity yet).
    * @returns {number}
    */
@@ -1515,6 +1672,7 @@
     copyFromLastWeek: copyFromLastWeek,
     moveBlockToTomorrow: moveBlockToTomorrow,
     getDayStats: getDayStats,
+    getWeekStats: getWeekStats,
     getStudyStreak: getStudyStreak,
     exportJSONString: exportJSONString,
     previewImportJSON: previewImportJSON,
